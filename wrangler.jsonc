@@ -1,0 +1,11 @@
+{
+  // Деплой на Cloudflare Workers Static Assets: воркер-скрипта нет, раздаётся только статика из `dist`.
+  "name": "greenapi-messenger",
+  "compatibility_date": "2026-10-03",
+  "assets": {
+    "directory": "dist",
+    // SPA-роутинг: путь без файла в `dist` отдаёт `index.html` со статусом 200,
+    // маршрут разбирает TanStack Router уже в браузере.
+    "not_found_handling": "single-page-application",
+  },
+}

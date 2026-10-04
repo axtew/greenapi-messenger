@@ -1,0 +1,26 @@
+node_modules/
+dist/
+*.local
+*.tsbuildinfo
+
+# Креды тестового инстанса GREEN-API для локальных и агентских проверок — только в .env.local.
+.env
+.env.local
+
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+*.log
+coverage/
+
+playwright-report/
+test-results/
+playwright/.auth/
+
+.wrangler/
+
+# Рабочий журнал сессий агента — локальный, в репозиторий не входит.
+status.md
