@@ -1,0 +1,60 @@
+{
+  "app": { "title": "GREEN-API Messenger" },
+  "login": {
+    "title": "Вход",
+    "subtitle": "Данные инстанса из личного кабинета GREEN-API",
+    "idInstanceLabel": "idInstance",
+    "apiTokenLabel": "apiTokenInstance",
+    "submitButton": "Войти",
+    "requiredError": "Обязательное поле",
+    "idInstanceError": "Только цифры",
+    "unauthorizedError": "Неверный idInstance или apiTokenInstance",
+    "notAuthorizedError": "Инстанс не авторизован — подключите Telegram-аккаунт в личном кабинете GREEN-API",
+    "networkError": "Не удалось связаться с GREEN-API. Проверьте подключение",
+    "sessionExpired": "Сессия недействительна — войдите заново"
+  },
+  "sidebar": {
+    "title": "Чаты",
+    "menuButton": "Меню",
+    "accountLabel": "Аккаунт",
+    "logoutButton": "Выйти",
+    "newChatButton": "Новый чат",
+    "emptyTitle": "Чатов пока нет",
+    "emptyHint": "Нажмите на карандаш, чтобы начать новый чат",
+    "syncError": "Не удалось обновить список чатов"
+  },
+  "settingsWarning": {
+    "webhookUrl": "У инстанса указан webhookUrl — новые сообщения уходят на него и сюда не придут",
+    "incomingDisabled": "У инстанса выключены входящие уведомления (incomingWebhook) — новые сообщения не придут",
+    "hint": "Исправьте настройки инстанса в личном кабинете GREEN-API"
+  },
+  "newChat": {
+    "title": "Новый чат",
+    "backButton": "Назад",
+    "phoneLabel": "Номер телефона",
+    "phonePlaceholder": "+7 999 123-45-67",
+    "submitButton": "Начать чат",
+    "phoneError": "Введите номер в международном формате: от 10 до 15 цифр",
+    "notFoundError": "Аккаунт Telegram не найден или номер скрыт настройками приватности",
+    "rateLimitError": "Слишком много проверок номера — попробуйте через пару часов",
+    "genericError": "Не удалось создать чат"
+  },
+  "chat": {
+    "selectChat": "Выберите, кому хотели бы написать",
+    "backButton": "Назад",
+    "historyError": "Не удалось загрузить историю",
+    "retryButton": "Повторить",
+    "emptyHistory": "Сообщений пока нет",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "unsupportedMessage": "Сообщение этого типа не поддерживается",
+    "failedLabel": "Не доставлено",
+    "composerPlaceholder": "Сообщение",
+    "sendButton": "Отправить"
+  },
+  "sendErrors": {
+    "quota": "превышен лимит тарифа",
+    "network": "нет связи с GREEN-API",
+    "generic": "ошибка отправки"
+  }
+}
