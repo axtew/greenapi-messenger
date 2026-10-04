@@ -5,7 +5,7 @@
 
 | Задача | Статус | Обсуждение | План | Журнал |
 |---|---|---|---|---|
-| `messenger-v1` — базовый сценарий ТЗ | подход согласован, план не начат | [brainstorm.md](messenger-v1/brainstorm.md) | — | — |
+| `messenger-v1` — базовый сценарий ТЗ | план готов, фазы не начаты | [brainstorm.md](messenger-v1/brainstorm.md) | [plan.md](messenger-v1/plan.md) (10 фаз) | — |
 
 Раскладка внутри задачи: `plan.md` — фазы и критерии приёмки; `<phase>/iter-<N>/` — отчёты разработчика, `REVIEW.md`, `VISUAL.md`;
 `EXECUTION.md` — журнал прогона.
