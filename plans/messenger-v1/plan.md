@@ -939,4 +939,84 @@ N/A — фаза сама является автоматической брау
 - Имена методов GREEN-API → строковый `enum` (`EGreenApiMethod`, члены — по используемым методам; Phase 9 добавит `receiveNotification` / `deleteNotification`); `method` запроса и `GreenApiError.method` типизируются им; повтор строки имени метода в сервисах уходит. Место — по лестнице `structure.md`.
 - Текст причины в `GreenApiError.message` выбирается исчерпывающе по `EGreenApiErrorKind` (`switch` с проверкой исчерпанности или справочник `Record<EGreenApiErrorKind, …>` из `typing.md`), чтобы пропущенный член был ошибкой компиляции; тексты сообщений не меняются, токен в них по-прежнему не попадает.
 
+### Phase 3 — added 2026-10-05 (2)
+**Trigger:** ревьюер (phase-3, iter-1): (1) перенос `useForm` «как есть» оставил комментарии, верные только для recipe-book (`resetOn` с примерами `isOpened` / `recipeId`; `catch` в `onSubmit` ссылается на общий `MutationCache`, который здесь ошибок не показывает) — это противоречит `code-style.md`; (2) `EGreenApiMethod` лежит в слое клиента (им типизирован запрос), а `architecture.md` называл сервисы единственным местом, знающим URL и имена методов.
+**Fix:**
+- В перенесённом `useForm` комментарии, ссылающиеся на образец, переписываются нейтрально; логика и FIXME не меняются. `resetOn` — «значение, при смене которого форма возвращается к начальным `inputs` (например, id редактируемой сущности)»; `catch` — «обработчик кидает при неудаче (так делает `mutateAsync`); показать ошибку — забота вызывающего (общий `MutationCache` или `onError` мутации), здесь достаточно не запирать форму для повтора».
+- `EGreenApiMethod` остаётся в `src/api/greenApi/_types.ts`. `docs/agents/architecture.md` (раздел «Путь данных») уточнён владельцем: только сервисы решают, какой метод GREEN-API вызвать и с каким телом; клиент знает хост, форму URL и набор имён методов (`enum`, которым типизирован запрос), но сам методы не выбирает.
+
+### Phases 3, 5 — added 2026-10-05 (3)
+**Trigger:** владелец: в `structure.md` добавлены раздел «Общий слой — сначала он, потом встроенный API» (обёртки над встроенными API и общие алиасы типов живут в `src/utils/` / `src/types/common.types.ts` с первого использования) и исключение «Заготовка под будущую фазу» (раздел фазы `**Provisioned for later phases**`). План написан до этих правил.
+**Fix:**
+- **Phase 3:**
+  - `getEntries` переезжает из `src/hooks/useForm/_helpers.ts` в `src/utils/helpers/objectGetters.ts`, `TSetState` — из `src/hooks/useForm/_types.ts` в `src/types/common.types.ts`; `useForm` импортирует их оттуда. JSDoc обёртки — что заменяет и почему.
+  - `src/utils/helpers/localStorage.ts` — `getLSItem(key, schema)` → `T | null` (`try/catch` + `JSON.parse` + zod `safeParse`; недоступное хранилище, битый JSON или чужая форма → `null`), `setLSItem(key, value)`, `removeLSItem(key)` (оба в `try/catch`: приватный режим Safari, запрет хранилища). Без `any` и непроверенных приведений. `src/api/session.ts` переходит на него; поведение сессии и её тесты не меняются.
+  - **Provisioned for later phases:**
+
+    | Символ | Фаза-потребитель | Как используется |
+    |---|---|---|
+    | `routerPaths.chat` | Phase 6 | роут `/chat/$chatId`, ссылки `ChatListItem` |
+- **Phase 5:** `chats.cache.ts` работает с хранилищем через `getLSItem` / `setLSItem` (схема списка чатов — zod), не через `localStorage` напрямую.
+  - **Provisioned for later phases:**
+
+    | Символ | Фаза-потребитель | Как используется |
+    |---|---|---|
+    | `resetUnread` (`chats.cache.ts`) | Phase 6 | `_useChatPage` — сброс непрочитанных при открытии чата |
+    | `applyLastMessage` (`chats.cache.ts`) | Phase 8, Phase 9 | снимок последнего сообщения при отправке и при входящем |
+    | `formatMessageTime`, `getDayKey`, `formatDayLabel` (`dateFormat.ts`) | Phase 7 | время в пузыре, группировка и подписи разделителей дат |
+
+### Phases 3, 6 — added 2026-10-05 (4)
+**Trigger:** ревьюер (phase-3, iter-1, необязательные замечания) и владелец: текст ошибки поля лежит внутри `<label>` и подмешивается в доступное имя поля; поле с подписью и ошибкой нужно двум фичам (вход — Phase 3, «Новый чат» — Phase 6); ошибка входа стоит между полями и кнопкой; `"/login"` в `session.ts` захардкожен.
+**Fix:**
+- **Phase 3:**
+  - `src/components/Input/` (`index.ts`, `_Input.tsx`, `_styles.ts`) — общее поле: проп `label` (видимая подпись, связанная с полем через `<label>`), проп `error: string | null`, остальные атрибуты `input` пробрасываются. Внутри — `id` от `useId()`; текст ошибки — **вне** `<label>`, отдельный элемент со своим `id`; у поля `aria-invalid` при ошибке и `aria-describedby` на элемент ошибки (только когда ошибка есть). Стиль ошибки и рамки — по `aria-invalid`. `font-size: 16px` (зум iOS). `LoginPage` переходит на него; поведение и тексты формы не меняются.
+  - Ошибка входа (`submitError`) — **под** кнопкой «Войти», `role="alert"` сохраняется.
+  - `signOut` берёт путь логина из `routerPaths.login` вместо литерала `"/login"` (цикла импортов нет: `_paths.ts` ничего не импортирует).
+- **Phase 6:** поле номера в `NewChatPanel` — общий `Input` из `src/components/Input/`.
+
+### Phase 3 — added 2026-10-05 (5)
+**Trigger:** владелец (после phase-3, iter-2): `GreenApiError.message` пользователю не показывается нигде (тексты интерфейса выбираются по `kind` / `status` из словаря) — это отладочная строка; справочник человекочитаемых причин по `kind` избыточен.
+**Fix:** заменяет пункт «текст причины выбирается исчерпывающе по `EGreenApiErrorKind`» из «Phase 3 — added 2026-10-05». `message` собирается из кодов: `GREEN-API <method>: <kind>` и ` <status>`, если статус есть (`GREEN-API getStateInstance: http 401`, `GREEN-API getChats: network`). Справочник причин удаляется. Токен в `message` по-прежнему не попадает.
+
+### Phases 1, 3 — added 2026-10-05 (6)
+**Trigger:** владелец: `declare module` смешан с логикой (`_theme.ts`, `_queryClient.ts`, `AppRouter.tsx`); объявления для компилятора — в `.d.ts` (правило добавлено в `typing.md`). Phase 1 п. 1 прямо требовал аугментацию «в этом же файле».
+**Fix:** заменяет «аугментация `DefaultTheme` … в этом же файле» из Phase 1 п. 1. Каждая аугментация переезжает в свой `.d.ts` рядом с тем, что описывает: тема styled-components — рядом с `src/theme/_theme.ts`; `Register` TanStack Query (тип `meta` мутаций) — рядом с `src/app/_queryClient.ts`; `Register` TanStack Router — рядом с `src/routes/AppRouter.tsx`. Значения (`theme`-части, `router`) — через `import type`. Поведение и типы не меняются; делается в phase-3 (фаза не закоммичена).
+
+### Phases 3, 4, 6 — added 2026-10-05 (7)
+**Trigger:** ревьюер (phase-3, iter-5): (1) фабрики роутов в `_routes.tsx` принимают родителя как `AnyRoute` (перенято из образца recipe-book) — пути и id детей собираются из `any`, `reason` из `useSearch` логина — `any`, `navigate` / `redirect` с несуществующим путём или чужим `search` компилируются; (2) при `skipLibCheck: true` компилятор не проверяет и собственные `.d.ts`: сломанный импорт в `styled.d.ts` / `router.d.ts` молча превращает тему и роутер в `any`.
+**Fix:**
+- **Phase 3:** `createCommonRoutes` / `createProtectedRoutes` обобщены по родителю (`<TRoot extends AnyRoute>(rootRoute: TRoot)` и т. п.; тела и вызовы не меняются). Правило записано в `routing.md`. Проверка: `reason` — `ESignOutReason | undefined`; несуществующий путь в `navigate` и неверный `search` — ошибка компиляции.
+- **Phase 3:** `skipLibCheck: false` в `tsconfig.app.json` (и в других tsconfig проекта, если они проверяют `src`); владелец разрешил devDependency `@types/stylis` для ошибок в типах `styled-components`. Если после этого остаются ошибки в чужих типах, которые `@types/stylis` не закрывает, — остановиться и сообщить, не обходить.
+- **Уточнение 2026-10-05 (владелец, после phase-3 iter-6):** `skipLibCheck: false` **отменён** — с `@types/stylis` в типах `styled-components` остаётся TS2694 (`NodeJS.ReadWriteStream`), закрыть её можно только типами `node` в браузерном конфиге или заглушкой. `skipLibCheck: true` остаётся, `@types/stylis` не добавляется; объявления остаются в `.d.ts`, а в `typing.md` записана проверка: после правки `.d.ts` — `tsc --noEmit --skipLibCheck false` без ошибок в `src/`.
+- **Phases 4, 6:** новые роуты (`MessengerLayout` + индексный роут, `/chat/$chatId`) добавляются в обобщённые фабрики; у `/chat/$chatId` типизированы путь и `params`. Внутри обобщённой фабрики `chatRoute.useParams()` не выводится (тип роута зависит от параметра-родителя — проверено на recipe-book: TS2339); компонент-обёртка роута читает параметры через `useParams({ from: <id роута> })` зарегистрированного роутера — тогда неверный id даёт ошибку компиляции.
+
+### Phases 4–10 — added 2026-10-05 (8): сверка с фазами 1–3
+**Trigger:** владелец попросил проверить, что будущие фазы учитывают правки фаз 1–3; аудит текста фаз 4–10 и общих таблиц против поправок, конвенций (`structure.md`, `typing.md`, `routing.md`, `architecture.md`) и кода фаз 1–3. Ниже — только то, что ещё не покрыто предыдущими поправками.
+**Fix:**
+- **Types and interfaces:** `IAccount.phone` — `string | null`; `username` в `IAccount` / `IContact` / `TCheckAccountResult` хранится без ведущего `@` (API присылает с `@`, сервис срезает), `@` добавляет UI; `IContact.name` — `name || contactName || "@" + username || "+" + phone || chatId`.
+- **Conventions to follow:** + строковые `enum` вместо литеральных union (кроме пропсов) — `typing.md`; сначала общий слой (`src/utils/`, `src/types/common.types.ts`), потом встроенный API — `structure.md`; пути — только `routerPaths`; `declare` — в `.d.ts` с проверкой `tsc --skipLibCheck false` — `typing.md`; фабрики роутов обобщены — `routing.md`.
+- **Phase 4:** `data-chat-open` и чтение `chatId` из параметров переносятся в Phase 6 (в её «Files to modify» добавляется `src/routes/layouts/MessengerLayout/_MessengerLayout.tsx`): пока роут `/chat/$chatId` не зарегистрирован, `useParams({ strict: false }).chatId` не компилируется (TS2339). В Phase 4 на мобильной видна только панель. Строка аккаунта в `AccountMenu` — `"@" + username`, иначе `"+" + phone`; оба `null` — строки нет (как при ошибке запроса).
+- **Phase 5:** имя-фолбэк при сбое `getContact` — `chatId` (`getChatIds()` отдаёт только id, телефона нет).
+- **Phase 6:**
+  - роут — `path: routerPaths.chat` (заготовка Phase 3); `Link` в `ChatListItem` и `navigate` после создания чата — `to: routerPaths.chat, params: { chatId }`; редирект неизвестного чата и «назад» в `ChatHeader` — `routerPaths.home`, не литерал `"/"`.
+  - `exists: false` → собственный класс ошибки по образцу `InstanceNotAuthorizedError` (`message` — код `GREEN-API checkAccount: notFound`); текст выбирает `_useNewChatForm` по классу / `kind` / `status` (как форма входа); мутация словарь не читает.
+  - фолбэк-контакт из `checkAccount` получает `name` по той же цепочке, что `getContact`: `"@" + username` → `"+" + phone` → `chatId`; подзаголовок `ChatHeader` — `"@" + username`, иначе `"+" + phone`, оба `null` — без подзаголовка.
+- **Phase 7:** `buildListItems` группирует по `getDayKey` из `dateFormat.ts` (заготовка Phase 5).
+  - **Provisioned for later phases:**
+
+    | Символ | Фаза-потребитель | Как используется |
+    |---|---|---|
+    | `updateMessages` (`messages.cache.ts`) | Phase 8, Phase 9 | локальная запись / замена / `FAILED` в `useSendMessageMutation`; `applyNotification` |
+- **Phase 9:**
+  - `typeMessage` уведомления сравнивается с существующим `ETypeMessage`, `status` у `outgoingMessageStatus` — с `EStatusMessage` (`messages.schema.ts`, члены добавляются при необходимости); новые `enum` — только `typeWebhook` и вид результата разбора. В `src/api/greenApi/_types.ts` добавляются `EGreenApiMethod.RECEIVE_NOTIFICATION` / `DELETE_NOTIFICATION` и `EHttpMethod.DELETE`.
+  - `wait(ms, signal)` — обёртка над `setTimeout`, прерываемая сигналом, — в `src/utils/helpers/` (общий слой, JSDoc: что заменяет и почему), не внутри `_poller.ts`.
+  - если понадобится проверка принадлежности значения к строковому `enum` — это второй потребитель после `isSignOutReason` (`_routes.tsx`): обобщённый guard в `src/utils/helpers/`, оба места переходят на него.
+- **Phase 10:**
+  - стаб различает HTTP-метод и путь (`deleteNotification` — `DELETE …/<receiptId>`, `receiveNotification` — `GET ?receiveTimeout=`), отдаёт `username` с ведущим `@` (`checkAccount`, `getContactInfo`), `getChats` — без `type`; `checkAccount` умеет `exist: false`, 200 `{status: false, data: {reason: "rate_limit_exceeded"}}` и HTTP 469. Имена методов в стабе сравниваются с `EGreenApiMethod`, а не с голыми строками (как импортировать без алиаса `@/` — решить при реализации).
+  - + сценарии: ошибки нового чата (`newChat.notFoundError` / `rateLimitError` / `searchRestrictedError`); 466 при отправке (`sendErrors.quota`) и входящее `extendedTextMessage` — их обещают «Assumptions to confirm».
+  - `e2e/*.ts` и `playwright.config.ts` проверяются `tsc` (свой tsconfig или включение в существующий), иначе `pnpm build` их типы не видит.
+- **Решения владельца (2026-10-05):**
+  - **Phases 4, 8 — клавиши.** Сравнения `event.key` — с членами строкового `enum` клавиш в общем слое (например, `EKeyboardKey` в `src/types/common.types.ts` или рядом с хелперами клавиатуры — по лестнице `structure.md`), не с голыми `"Escape"` / `"Enter"`. Заводит его Phase 4 (`ESCAPE`) — первый потребитель; Phase 8 добавляет `ENTER`.
+  - **Phase 6 — ошибка мутации «Новый чат».** Как на входе (поправка (4)): в `error` у `Input` — только ошибка валидации поля; ошибка запроса (`notFound` / лимиты / прочее) — отдельный элемент с `role="alert"` **под** кнопкой `newChat.submitButton`. Заменяет «ошибка мутации — под полем» из Phase 6 п. 2.
+
 ## Known issues

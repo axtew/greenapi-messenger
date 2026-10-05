@@ -1,38 +1,32 @@
 import { ZodError } from "zod";
 
 import { getSession } from "@/api/session";
+import { getEntries } from "@/utils/helpers/objectGetters";
 
-import { EGreenApiErrorKind, type IGreenApiRequestOptions } from "./_types";
+import { EGreenApiErrorKind, type EGreenApiMethod, type IGreenApiRequestOptions } from "./_types";
 
 const GREEN_API_HOST = "https://api.green-api.com";
 
 /**
  * Ошибка запроса к GREEN-API: HTTP-статус не 200, сбой сети, ответ не той формы или лимит, о котором сервер сообщил в теле ответа.
  *
- * `message` содержит только имя метода и причину — URL запроса в него не попадает, потому что в URL лежит `apiTokenInstance`.
+ * `message` — отладочная строка из кодов: `GREEN-API <method>: <kind>` и HTTP-статус через пробел, если он есть
+ * (`GREEN-API getStateInstance: http 401`, `GREEN-API getChats: network`). Тексты для пользователя выбираются по `kind` и `status`,
+ * а не по `message`. URL запроса в `message` не попадает, потому что в URL лежит `apiTokenInstance`.
  */
 export class GreenApiError extends Error {
   readonly kind: EGreenApiErrorKind;
   /** HTTP-статус; `null` — ответа не было (сбой сети). */
   readonly status: number | null;
-  readonly method: string;
+  readonly method: EGreenApiMethod;
 
   constructor(
     kind: EGreenApiErrorKind,
-    method: string,
+    method: EGreenApiMethod,
     status: number | null,
     options?: ErrorOptions,
   ) {
-    const reason =
-      kind === EGreenApiErrorKind.NETWORK
-        ? "сбой сети"
-        : kind === EGreenApiErrorKind.HTTP
-          ? `HTTP ${status}`
-          : kind === EGreenApiErrorKind.RATE_LIMITED
-            ? "превышен лимит запросов"
-            : "ответ неожиданной формы";
-
-    super(`GREEN-API ${method}: ${reason}`, options);
+    super(`GREEN-API ${method}: ${kind}${status === null ? "" : ` ${status}`}`, options);
     this.name = "GreenApiError";
     this.kind = kind;
     this.status = status;
@@ -62,7 +56,7 @@ export async function greenApiRequest<T>({
 
   const { idInstance, apiTokenInstance } = credentials;
   const search = query
-    ? `?${new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]))}`
+    ? `?${new URLSearchParams(getEntries(query).map(([key, value]) => [key, String(value)]))}`
     : "";
   const url = `${GREEN_API_HOST}/waInstance${idInstance}/${method}/${apiTokenInstance}${pathSuffix}${search}`;
 

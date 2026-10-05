@@ -50,12 +50,3 @@ export const theme = {
   radii,
   breakpoints,
 };
-
-declare module "styled-components" {
-  export interface DefaultTheme {
-    palette: typeof palette;
-    typography: typeof typography;
-    radii: typeof radii;
-    breakpoints: typeof breakpoints;
-  }
-}

@@ -1,4 +1,4 @@
-import { EHttpMethod, greenApiRequest } from "@/api/greenApi";
+import { EGreenApiMethod, EHttpMethod, greenApiRequest } from "@/api/greenApi";
 import {
   accountSettingsSchema,
   EIncomingWebhook,
@@ -13,7 +13,7 @@ import { toNullable, toPhone, toUsername } from "./_helpers";
 /** Проверяет учётные данные до входа: `true`, если инстанс авторизован в Telegram. */
 export async function checkInstanceAuthorized(credentials: ISession): Promise<boolean> {
   const { stateInstance } = await greenApiRequest({
-    method: "getStateInstance",
+    method: EGreenApiMethod.GET_STATE_INSTANCE,
     httpMethod: EHttpMethod.GET,
     schema: stateInstanceSchema,
     credentials,
@@ -24,7 +24,7 @@ export async function checkInstanceAuthorized(credentials: ISession): Promise<bo
 
 export async function getInstanceSettings(): Promise<IInstanceSettings> {
   const { webhookUrl, incomingWebhook } = await greenApiRequest({
-    method: "getSettings",
+    method: EGreenApiMethod.GET_SETTINGS,
     httpMethod: EHttpMethod.GET,
     schema: settingsSchema,
   });
@@ -34,7 +34,7 @@ export async function getInstanceSettings(): Promise<IInstanceSettings> {
 
 export async function getAccount(): Promise<IAccount> {
   const { phone, username, avatar } = await greenApiRequest({
-    method: "getAccountSettings",
+    method: EGreenApiMethod.GET_ACCOUNT_SETTINGS,
     httpMethod: EHttpMethod.GET,
     schema: accountSettingsSchema,
   });

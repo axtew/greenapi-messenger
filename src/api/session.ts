@@ -1,6 +1,8 @@
 import { z } from "zod";
 
+import { routerPaths } from "@/routes/_paths";
 import type { ISession } from "@/types/account.types";
+import { getLSItem, removeLSItem, setLSItem } from "@/utils/helpers/localStorage";
 
 const SESSION_STORAGE_KEY = "greenapi-messenger:session";
 
@@ -14,41 +16,13 @@ const sessionSchema: z.ZodType<ISession> = z.object({
   apiTokenInstance: z.string(),
 });
 
-/**
- * Учётные данные текущей сессии из localStorage; `null`, если входа не было или запись повреждена.
- *
- * Доступ к localStorage обёрнут в `try/catch`: в приватном режиме Safari и при запрете хранилища он бросает исключение.
- */
+/** Учётные данные текущей сессии из localStorage; `null`, если входа не было, запись повреждена или хранилище недоступно. */
 export function getSession(): ISession | null {
-  try {
-    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-
-    if (raw === null) {
-      return null;
-    }
-
-    const parsed = sessionSchema.safeParse(JSON.parse(raw));
-
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
-  }
+  return getLSItem(SESSION_STORAGE_KEY, sessionSchema);
 }
 
 export function saveSession(session: ISession): void {
-  try {
-    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-  } catch (error) {
-    console.error("Не удалось сохранить сессию", error);
-  }
-}
-
-function clearSession(): void {
-  try {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
-  } catch (error) {
-    console.error("Не удалось удалить сессию", error);
-  }
+  setLSItem(SESSION_STORAGE_KEY, session);
 }
 
 /**
@@ -58,6 +32,6 @@ function clearSession(): void {
  * и Web Lock, а этому модулю не нужно импортировать роутер (иначе — цикл импортов через компоненты с кнопкой выхода).
  */
 export function signOut(reason?: ESignOutReason): void {
-  clearSession();
-  window.location.assign("/login" + (reason === undefined ? "" : `?reason=${reason}`));
+  removeLSItem(SESSION_STORAGE_KEY);
+  window.location.assign(routerPaths.login + (reason === undefined ? "" : `?reason=${reason}`));
 }

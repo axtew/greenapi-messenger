@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import { EHttpMethod, greenApiRequest } from "@/api/greenApi";
+import { EGreenApiMethod, EHttpMethod, greenApiRequest } from "@/api/greenApi";
 import {
   chatHistorySchema,
   EChatHistoryEntryType,
@@ -24,7 +24,7 @@ function getHistoryText(entry: z.infer<typeof chatHistorySchema>[number]): strin
 /** Последние `count` сообщений чата по возрастанию времени, включая записи правок и удалений. */
 export async function getChatHistory(chatId: string, count: number): Promise<IMessage[]> {
   const entries = await greenApiRequest({
-    method: "getChatHistory",
+    method: EGreenApiMethod.GET_CHAT_HISTORY,
     httpMethod: EHttpMethod.POST,
     schema: chatHistorySchema,
     body: { chatId, count },
@@ -59,7 +59,7 @@ export async function getChatHistory(chatId: string, count: number): Promise<IMe
  */
 export async function sendMessage(chatId: string, text: string): Promise<string> {
   const { idMessage } = await greenApiRequest({
-    method: "sendMessage",
+    method: EGreenApiMethod.SEND_MESSAGE,
     httpMethod: EHttpMethod.POST,
     schema: sendMessageSchema,
     body: { chatId, message: text },

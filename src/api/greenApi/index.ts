@@ -1,2 +1,2 @@
 export { GreenApiError, greenApiRequest } from "./_client";
-export { EGreenApiErrorKind, EHttpMethod } from "./_types";
+export { EGreenApiErrorKind, EGreenApiMethod, EHttpMethod } from "./_types";

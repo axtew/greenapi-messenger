@@ -14,14 +14,25 @@ export enum EGreenApiErrorKind {
   RATE_LIMITED = "rateLimited",
 }
 
+/** Методы GREEN-API, которые вызывает приложение; значение — имя метода в URL запроса. */
+export enum EGreenApiMethod {
+  GET_STATE_INSTANCE = "getStateInstance",
+  GET_SETTINGS = "getSettings",
+  GET_ACCOUNT_SETTINGS = "getAccountSettings",
+  CHECK_ACCOUNT = "checkAccount",
+  GET_CONTACT_INFO = "getContactInfo",
+  GET_CHATS = "getChats",
+  GET_CHAT_HISTORY = "getChatHistory",
+  SEND_MESSAGE = "sendMessage",
+}
+
 export enum EHttpMethod {
   GET = "GET",
   POST = "POST",
 }
 
 export interface IGreenApiRequestOptions<T> {
-  /** Имя метода GREEN-API, например `getStateInstance`. */
-  method: string;
+  method: EGreenApiMethod;
   httpMethod: EHttpMethod;
   /** Схема тела успешного ответа; тело `null` (пустая очередь уведомлений) схема должна допускать сама. */
   schema: ZodType<T>;

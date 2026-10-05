@@ -1,4 +1,10 @@
-import { EGreenApiErrorKind, EHttpMethod, GreenApiError, greenApiRequest } from "@/api/greenApi";
+import {
+  EGreenApiErrorKind,
+  EGreenApiMethod,
+  EHttpMethod,
+  GreenApiError,
+  greenApiRequest,
+} from "@/api/greenApi";
 import {
   chatsSchema,
   checkAccountSchema,
@@ -17,7 +23,7 @@ import { toNullable, toPhone, toUsername } from "./_helpers";
  */
 export async function checkAccount(phone: string): Promise<TCheckAccountResult> {
   const result = await greenApiRequest({
-    method: "checkAccount",
+    method: EGreenApiMethod.CHECK_ACCOUNT,
     httpMethod: EHttpMethod.POST,
     schema: checkAccountSchema,
     body: { phoneNumber: Number(phone) },
@@ -28,7 +34,7 @@ export async function checkAccount(phone: string): Promise<TCheckAccountResult> 
       result.data?.reason === ECheckAccountFailReason.RATE_LIMIT_EXCEEDED
         ? EGreenApiErrorKind.RATE_LIMITED
         : EGreenApiErrorKind.INVALID_RESPONSE,
-      "checkAccount",
+      EGreenApiMethod.CHECK_ACCOUNT,
       200,
     );
   }
@@ -52,7 +58,7 @@ export async function checkAccount(phone: string): Promise<TCheckAccountResult> 
  */
 export async function getContact(chatId: string): Promise<IContact> {
   const { name, contactName, username, phoneNumber, avatar } = await greenApiRequest({
-    method: "getContactInfo",
+    method: EGreenApiMethod.GET_CONTACT_INFO,
     httpMethod: EHttpMethod.POST,
     schema: contactInfoSchema,
     body: { chatId },
@@ -78,7 +84,7 @@ export async function getContact(chatId: string): Promise<IContact> {
 /** chatId личных чатов аккаунта в порядке ответа сервера; группы и каналы (отрицательные id) отброшены. */
 export async function getChatIds(): Promise<string[]> {
   const chats = await greenApiRequest({
-    method: "getChats",
+    method: EGreenApiMethod.GET_CHATS,
     httpMethod: EHttpMethod.GET,
     schema: chatsSchema,
   });

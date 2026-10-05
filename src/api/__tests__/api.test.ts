@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 
-import { EGreenApiErrorKind, EHttpMethod, GreenApiError, greenApiRequest } from "@/api/greenApi";
+import {
+  EGreenApiErrorKind,
+  EGreenApiMethod,
+  EHttpMethod,
+  GreenApiError,
+  greenApiRequest,
+} from "@/api/greenApi";
 import { stateInstanceSchema } from "@/api/schemas/account.schema";
 import {
   checkInstanceAuthorized,
@@ -114,7 +120,7 @@ describe("greenApiRequest", () => {
     respondJson({ stateInstance: "authorized" });
 
     await greenApiRequest({
-      method: "someMethod",
+      method: EGreenApiMethod.GET_STATE_INSTANCE,
       httpMethod: EHttpMethod.GET,
       schema: stateInstanceSchema,
       query: { receiveTimeout: 20 },
@@ -124,7 +130,7 @@ describe("greenApiRequest", () => {
     const { url, init } = lastRequest();
 
     expect(url).toBe(
-      "https://api.green-api.com/waInstance4100000001/someMethod/secret-token-abc/7?receiveTimeout=20",
+      "https://api.green-api.com/waInstance4100000001/getStateInstance/secret-token-abc/7?receiveTimeout=20",
     );
     expect(init?.method).toBe("GET");
     expect(init?.body).toBeUndefined();
@@ -158,7 +164,7 @@ describe("greenApiRequest", () => {
 
     expect(error.kind).toBe(EGreenApiErrorKind.HTTP);
     expect(error.status).toBe(401);
-    expect(error.method).toBe("getAccountSettings");
+    expect(error.method).toBe(EGreenApiMethod.GET_ACCOUNT_SETTINGS);
   });
 
   it("сбой fetch → network со статусом null", async () => {
@@ -180,7 +186,7 @@ describe("greenApiRequest", () => {
 
     await expect(
       greenApiRequest({
-        method: "receiveNotification",
+        method: EGreenApiMethod.GET_STATE_INSTANCE,
         httpMethod: EHttpMethod.GET,
         schema: stateInstanceSchema,
         signal: controller.signal,
@@ -194,7 +200,7 @@ describe("greenApiRequest", () => {
     const error = await catchError(getInstanceSettings());
 
     expect(error.kind).toBe(EGreenApiErrorKind.INVALID_RESPONSE);
-    expect(error.method).toBe("getSettings");
+    expect(error.method).toBe(EGreenApiMethod.GET_SETTINGS);
   });
 
   it("не-JSON при 200 → invalidResponse без cause", async () => {
@@ -214,8 +220,8 @@ describe("greenApiRequest", () => {
     expect(error.cause).toBeInstanceOf(ZodError);
   });
 
-  it("токен не попадает в message ни одной ошибки", async () => {
-    respondWith("", 500);
+  it("message — коды метода, вида и статуса; токен в него не попадает", async () => {
+    respondWith("", 401);
     fetchMock.mockRejectedValueOnce(new TypeError(SESSION.apiTokenInstance));
     respondJson({ unexpected: true });
     respondJson({ status: false, data: { status: "fail", reason: "rate_limit_exceeded" } });
@@ -233,6 +239,8 @@ describe("greenApiRequest", () => {
       EGreenApiErrorKind.INVALID_RESPONSE,
       EGreenApiErrorKind.RATE_LIMITED,
     ]);
+    expect(errors[0]?.message).toBe("GREEN-API getChats: http 401");
+    expect(errors[1]?.message).toBe("GREEN-API getChats: network");
 
     for (const error of errors) {
       expect(error.message).not.toContain(SESSION.apiTokenInstance);
@@ -306,7 +314,7 @@ describe("chats.service", () => {
 
     expect(error.kind).toBe(EGreenApiErrorKind.RATE_LIMITED);
     expect(error.status).toBe(200);
-    expect(error.method).toBe("checkAccount");
+    expect(error.method).toBe(EGreenApiMethod.CHECK_ACCOUNT);
   });
 
   it("checkAccount: другой status false → invalidResponse", async () => {
