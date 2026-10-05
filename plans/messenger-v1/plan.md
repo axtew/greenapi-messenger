@@ -1035,4 +1035,26 @@ N/A — фаза сама является автоматической брау
 - **Phase 7:** пилюля (сейчас в `src/pages/HomePage/_styles.ts`) становится и разделителем дат в `MessageList` — второй потребитель в другой фиче: поднять в общий компонент `src/components/`.
 - **Phase 9:** `_useMessengerLayout.ts` → `src/layouts/MessengerLayout/_useMessengerLayout.ts`, правка — `src/layouts/MessengerLayout/_MessengerLayout.tsx`; `SettingsWarning` → `src/layouts/MessengerLayout/_internal/Sidebar/_internal/SettingsWarning/`; правка `Sidebar` — по новому пути.
 
+### Phase 5 — added 2026-10-05 (11)
+**Trigger:** разработчик (phase-5, iter-1, STOPPED_ON_PLAN_GAP): с `initialData` + `initialDataUpdatedAt: 0` + `staleTime: Infinity` TanStack Query v5 считает данные из localStorage свежими навсегда (`0 + Infinity` никогда не меньше «сейчас») и `queryFn` не вызывает ни разу — проверено на `@tanstack/query-core@5.104.1`. Плюс два вопроса: фолбэк-имя при сбое `getContact` закреплялось навсегда; анимация скелетона получает второго потребителя.
+**Fix:**
+- `useChatsQuery`: `initialData` и `initialDataUpdatedAt: 0` остаются; `staleTime` — 5 часов (константа с говорящим именем). Синхронизация при монтировании идёт сразу (данные из хранилища устаревшие), после неё — повтор не чаще раза в 5 часов, по событию (монтирование нового наблюдателя, восстановление сети). Заменяет «`staleTime: Infinity` — повторной синхронизации в сессии нет» из п. 2.
+- Чат, у которого `getContact` упал, хранит признак «профиль не загружен»; при следующей синхронизации `getContact` запрашивается для новых чатов **и** для таких (известные чаты с загруженным профилем по-прежнему не запрашиваются — квота `getContactInfo`). Признак — поле кэшируемого чата (тип и схема хранилища — по месту), в UI не показывается.
+- Анимация скелетона (`keyframes`) переезжает из `AccountMenu/_styles.ts` в `src/layouts/MessengerLayout/_internal/Sidebar/_styles.ts` — второй потребитель (скелетоны строк списка).
+
+### Phases 5, 6, 9 — added 2026-10-05 (12)
+**Trigger:** ревьюер (phase-5, iter-2): (1) запасной профиль при сбое `getContact` перезаписывал временный профиль уже известного чата — противоречит п. 2.5 Phase 5 («чат остаётся с тем, что есть»); (2) третий аргумент `upsertContact(chats, contact, { isProfileLoaded })` обязателен, но Phase 6 и Phase 9 его не задают; (3) при пустом списке и ошибке синхронизации «Чатов пока нет» вводит в заблуждение; (4) `updateChats` до создания запроса списка в кэше создаст его со свежим `dataUpdatedAt`, и `useChatsQuery` пропустит синхронизацию.
+**Fix:**
+- **Phase 5:** при сбое `getContact` заглушка (`name = chatId`, `isProfileLoaded: false`) добавляется **только** для чата, которого нет в списке на момент слияния; известный чат остаётся с тем, что есть, и с прежним `isProfileLoaded`. При пустом списке и ошибке синхронизации — только `sidebar.syncError`, без пустого состояния.
+- **Phase 6:** `upsertContact` — успешный `getContact` → `{ isProfileLoaded: true }`; запасной контакт из `checkAccount` → `{ isProfileLoaded: false }`.
+- **Phase 9:** чат от неизвестного отправителя → `{ isProfileLoaded: false }`; успешный `enrichChat` → `{ isProfileLoaded: true }`; неудачный `enrichChat` существующую запись не трогает. Poller не пишет в кэш списка, пока запрос `["chats", idInstance]` не создан (`Sidebar` создаёт его при рендере, раньше эффектов каркаса — порядок сохранить и не полагаться на обратный).
+
+### Phase 6 — added 2026-10-05 (10)
+**Trigger:** визуальный ревьюер (phase-4, iter-2): закрытие меню аккаунта по уходу фокуса (`onBlur` корня) в Phase 4 нельзя проверить реальным сценарием — после «Выйти» на странице нет фокусируемых элементов. Элементы списка чатов становятся фокусируемыми (`Link`) в Phase 6.
+**Fix:** в Visual Verification Phase 6 добавляется строка:
+
+| check_id | dependency_group | expected_evidence |
+| --- | --- | --- |
+| account_menu_tab_out | menu | открыть меню аккаунта, фокус на «Выйти», `Tab` → фокус на первом элементе списка чатов (ссылке), меню закрыто |
+
 ## Known issues

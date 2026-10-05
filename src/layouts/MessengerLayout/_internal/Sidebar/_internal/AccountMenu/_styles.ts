@@ -1,4 +1,6 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
+
+import { skeletonPulse } from "../../_styles";
 
 export const SRoot = styled.div`
   position: relative;
@@ -69,19 +71,13 @@ export const SAccount = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.palette.border};
 `;
 
-const pulse = keyframes`
-  50% {
-    opacity: 0.5;
-  }
-`;
-
 /** Плейсхолдер строки аккаунта на время загрузки — высотой с одну строку `B1`. */
 export const SAccountSkeleton = styled.div`
   width: 60%;
   height: 22px;
   border-radius: ${({ theme }) => theme.radii.pill};
   background: ${({ theme }) => theme.palette.surfaceMuted};
-  animation: ${pulse} 1.5s ease-in-out infinite;
+  animation: ${skeletonPulse} 1.5s ease-in-out infinite;
 `;
 
 export const SLogoutButton = styled(SBareButton)`

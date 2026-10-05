@@ -19,30 +19,13 @@ import { getChatHistory, sendMessage } from "@/api/services/messages.service";
 import { ESignOutReason, getSession, saveSession, signOut } from "@/api/session";
 import { EMessageDirection, EMessageStatus } from "@/types/messages.types";
 
+import { createMemoryStorage } from "./_memoryStorage";
+
 const SESSION = { idInstance: "4100000001", apiTokenInstance: "secret-token-abc" };
 const SESSION_KEY = "greenapi-messenger:session";
 
 const fetchMock = vi.fn<typeof fetch>();
 const assignMock = vi.fn<(url: string) => void>();
-
-function createMemoryStorage(): Storage {
-  const items = new Map<string, string>();
-
-  return {
-    get length() {
-      return items.size;
-    },
-    clear: () => items.clear(),
-    getItem: (key) => items.get(key) ?? null,
-    key: (index) => [...items.keys()][index] ?? null,
-    removeItem: (key) => {
-      items.delete(key);
-    },
-    setItem: (key, value) => {
-      items.set(key, value);
-    },
-  };
-}
 
 function respondWith(body: string, status = 200) {
   fetchMock.mockResolvedValueOnce(new Response(body, { status }));

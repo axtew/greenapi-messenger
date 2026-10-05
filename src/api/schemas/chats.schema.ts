@@ -35,5 +35,8 @@ export const contactInfoSchema = z.object({
   avatar: z.string().optional(),
 });
 
-/** На реальном инстансе записи приходят без документированного поля `type`, поэтому берётся только `chatId`. */
+/**
+ * Из записей `getChats` берётся только `chatId`: поле `type` реальный инстанс присылал не всегда, а личный чат и так
+ * отличается от группы знаком `chatId`.
+ */
 export const chatsSchema = z.array(z.object({ chatId: z.string() }));
