@@ -1019,4 +1019,20 @@ N/A — фаза сама является автоматической брау
   - **Phases 4, 8 — клавиши.** Сравнения `event.key` — с членами строкового `enum` клавиш в общем слое (например, `EKeyboardKey` в `src/types/common.types.ts` или рядом с хелперами клавиатуры — по лестнице `structure.md`), не с голыми `"Escape"` / `"Enter"`. Заводит его Phase 4 (`ESCAPE`) — первый потребитель; Phase 8 добавляет `ENTER`.
   - **Phase 6 — ошибка мутации «Новый чат».** Как на входе (поправка (4)): в `error` у `Input` — только ошибка валидации поля; ошибка запроса (`notFound` / лимиты / прочее) — отдельный элемент с `role="alert"` **под** кнопкой `newChat.submitButton`. Заменяет «ошибка мутации — под полем» из Phase 6 п. 2.
 
+### Phases 4–9 — added 2026-10-05 (9): папка `src/layouts/`
+**Trigger:** ревьюер (phase-4, iter-1): `Sidebar` (один потребитель — каркас) лежал в `src/components/`, `NoChatSelected` (экран индексного роута) — в `src/routes/layouts/`; это противоречило лестнице `structure.md` и `routing.md`. Владелец: каркасы layout-роутов — в отдельной папке `src/layouts/`, устроенной как страницы; `_internal/` — не глубже двух уровней (правила записаны в `structure.md` и `routing.md`). Плюс находка `[code]` iter-1 и необязательные замечания.
+**Fix:** пути ниже заменяют пути из таблиц «Files to create / Files to modify» и текста фаз.
+- **Phase 4:**
+  - `src/routes/layouts/MessengerLayout/` → `src/layouts/MessengerLayout/` (`index.ts`, `_MessengerLayout.tsx`, `_styles.ts`); `src/routes/layouts/` удаляется.
+  - `src/components/Sidebar/` → `src/layouts/MessengerLayout/_internal/Sidebar/`; `AccountMenu` → `src/layouts/MessengerLayout/_internal/Sidebar/_internal/AccountMenu/`.
+  - `_NoChatSelected.tsx` → страница `src/pages/HomePage/` (`index.ts`, `_HomePage.tsx`, `_styles.ts`); индексный роут `/` рендерит `HomePage`.
+  - `AccountMenu`: при открытии фокус переходит внутрь меню (выпадающий блок с `tabIndex={-1}` фокусируется ref-callback'ом при монтировании, без `useEffect`), чтобы `Escape` закрывал меню и в Safari / Firefox на macOS, и после клика по тексту меню; меню закрывается и когда фокус уходит за его пределы (`onBlur` корня, `relatedTarget` вне меню).
+  - Ключ `app` (`app.title`) удаляется из `public/dictionaries/ru.json` и интерфейса `I18n` — после ухода заглушки Phase 3 он не используется.
+- **Phase 5:** `ChatListItem` → `src/layouts/MessengerLayout/_internal/Sidebar/_internal/ChatListItem/`; правка тела панели — в `src/layouts/MessengerLayout/_internal/Sidebar/_Sidebar.tsx`.
+- **Phase 6:** `NewChatPanel` → `src/layouts/MessengerLayout/_internal/Sidebar/_internal/NewChatPanel/`; правки `Sidebar` и `ChatListItem` — по новым путям; `data-chat-open` (поправка (8)) — в `src/layouts/MessengerLayout/_MessengerLayout.tsx`.
+  - Иконки: с `PencilIcon` / `BackIcon` обёртка `<svg …>` повторяется четыре раза — внутренняя (неэкспортируемая) база в `src/components/icons/`, принимающая `d`.
+  - Круглая кнопка-иконка 44×44 (сейчас `SMenuButton` в `AccountMenu/_styles.ts`) нужна карандашу, «назад» в `NewChatPanel` и `ChatHeader` — второй потребитель в другой фиче: поднять в общий компонент `src/components/`, а не копировать.
+- **Phase 7:** пилюля (сейчас в `src/pages/HomePage/_styles.ts`) становится и разделителем дат в `MessageList` — второй потребитель в другой фиче: поднять в общий компонент `src/components/`.
+- **Phase 9:** `_useMessengerLayout.ts` → `src/layouts/MessengerLayout/_useMessengerLayout.ts`, правка — `src/layouts/MessengerLayout/_MessengerLayout.tsx`; `SettingsWarning` → `src/layouts/MessengerLayout/_internal/Sidebar/_internal/SettingsWarning/`; правка `Sidebar` — по новому пути.
+
 ## Known issues

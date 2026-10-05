@@ -1,8 +1,5 @@
 /** Форма словаря `public/dictionaries/*.json`. */
 export interface I18n {
-  app: {
-    title: string;
-  };
   login: {
     title: string;
     subtitle: string;

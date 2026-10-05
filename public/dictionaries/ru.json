@@ -1,5 +1,4 @@
 {
-  "app": { "title": "GREEN-API Messenger" },
   "login": {
     "title": "Вход",
     "subtitle": "Данные инстанса из личного кабинета GREEN-API",

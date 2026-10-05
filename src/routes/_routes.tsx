@@ -1,8 +1,7 @@
 import { type AnyRoute, createRoute, redirect } from "@tanstack/react-router";
 
 import { ESignOutReason, getSession } from "@/api/session";
-import { H1 } from "@/components/Typography";
-import { useI18nSelector } from "@/context/I18nContext";
+import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "@/pages/LoginPage";
 
 import { routerPaths } from "./_paths";
@@ -44,14 +43,8 @@ export function createProtectedRoutes<TLayout extends AnyRoute>(protectedLayoutR
   const homeRoute = createRoute({
     getParentRoute: () => protectedLayoutRoute,
     path: routerPaths.home,
-    component: HomeStub,
+    component: HomePage,
   });
 
   return [homeRoute] as const;
-}
-
-function HomeStub() {
-  const l = useI18nSelector(({ l }) => l.app);
-
-  return <H1>{l.title}</H1>;
 }
