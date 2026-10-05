@@ -14,7 +14,7 @@
 | Задача трогает | Читать |
 |---|---|
 | любой код в `src/` | [`conventions/code-style.md`](docs/agents/conventions/code-style.md), [`conventions/structure.md`](docs/agents/conventions/structure.md), [`conventions/typing.md`](docs/agents/conventions/typing.md), [`conventions/stack.md`](docs/agents/conventions/stack.md) |
-| компоненты, страницы | + [`conventions/components.md`](docs/agents/conventions/components.md), [`conventions/styling.md`](docs/agents/conventions/styling.md) |
+| компоненты, страницы, каркасы (`src/layouts/`) | + [`conventions/components.md`](docs/agents/conventions/components.md), [`conventions/styling.md`](docs/agents/conventions/styling.md) |
 | пользовательские тексты, `public/dictionaries/` | + [`conventions/i18n.md`](docs/agents/conventions/i18n.md) |
 | `src/routes/`, навигацию, guard авторизации | + [`conventions/routing.md`](docs/agents/conventions/routing.md) |
 | запросы к GREEN-API, poller, кэш, чаты | + [`architecture.md`](docs/agents/architecture.md) |
