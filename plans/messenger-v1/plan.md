@@ -912,4 +912,31 @@ N/A — фаза сама является автоматической брау
 **Trigger:** ревьюер (phase-1, iter-1): `H2`, `H3`, `B1`, `B2`, `Caption` экспортируются без импортёров — противоречит дисциплине экспорта `structure.md`.
 **Fix:** одобренное владельцем исключение из дисциплины экспорта — шкала Typography является контрактом фазы и экспортируется целиком (`H1`, `H3`, `B1`, `B2`, `Caption`, пропсы `color` / `textAlign` / `as`, полный набор `TTextColor`), хотя в Phase 1 их пользователь — только заглушка `H1`. `H2` удаляется из `src/components/Typography/` и из плана: его не использует ни одна фаза.
 
+### Phase 2 — added 2026-10-05
+**Trigger:** разработчик и ревьюер (phase-2, iter-1): по документации CheckAccount лимит поиска по номеру приходит ответом **HTTP 200** `{"status": false, "data": {"reason": "rate_limit_exceeded", …}}`, а HTTP 469 — другой лимит без срока (`brainstorm.md` → «Проверенные факты», исправлено владельцем). Схема `checkAccount` такой ответ не принимает → `invalidResponse` → Phase 6 показала бы `newChat.genericError`.
+**Fix:**
+- `checkAccount` распознаёт тело `{status: false, …}`: `data.reason === "rate_limit_exceeded"` → `GreenApiError` с новым `kind: "rateLimited"`; любой другой `status: false` (в т. ч. `instance is starting or not authorized`) → `GreenApiError` `kind: "invalidResponse"`. HTTP 469 по-прежнему даёт `kind: "http"`, `status: 469` — клиент не меняется.
+- Новый ключ словаря `newChat.searchRestrictedError` = «Telegram временно ограничил поиск по номеру — попробуйте позже» — в `public/dictionaries/ru.json` и интерфейс `I18n` (словарь остаётся общим для всех фаз).
+- Таблица ошибок Phase 6 (п. 1, `useCreateChatMutation`) заменяется: `exists: false` → `newChat.notFoundError`; `kind: "rateLimited"` → `newChat.rateLimitError`; HTTP 469 → `newChat.searchRestrictedError`; прочее → `newChat.genericError`.
+
+### Phase 5 — added 2026-10-05
+**Trigger:** ревьюер (phase-2, iter-1): `IChat` и `IChatLastMessage` из «Types and interfaces» не объявлены в Phase 2 — у них нет импортёра до Phase 5 (дисциплина экспорта `structure.md`).
+**Fix:** `IChat` и `IChatLastMessage` объявляются в Phase 5 в `src/types/chats.types.ts` по форме из «Types and interfaces», вместе с первым потребителем (`chats.cache.ts`).
+
+### Phases 2, 3, 6, 7, 9 — added 2026-10-05
+**Trigger:** владелец (после phase-2, iter-2): везде, где может быть `enum`, должен быть строковый `enum`; литеральные union — только для пропсов компонентов (потребителю не нужно импортировать `enum` ради пропа). План в нескольких местах задаёт литеральные union.
+**Fix:** правило действует для всех фаз и перекрывает формулировки фаз. Исключение — пропсы компонентов (`Typography` `color` / `textAlign` и т. п.). Где объявлять `enum` — по лестнице `structure.md`. Конкретно:
+- **Phase 2:** `GreenApiError.kind` → `enum` (`HTTP`, `NETWORK`, `INVALID_RESPONSE`, `RATE_LIMITED`); `httpMethod` клиента → `enum` (`GET`, `POST`; `DELETE` добавит Phase 9); `signOut(reason?)` → `enum` причины выхода (`EXPIRED = "expired"`, значение уходит в `?reason=`). Значения полей GREEN-API, с которыми код сравнивает (`stateInstance`, `incomingWebhook`, `reason` отказа `checkAccount`, `type` записи истории, `statusMessage`, `typeMessage`), — строковые `enum` из используемых значений; zod-схемы при этом не сужаются там, где API может прислать значение вне `enum` (неизвестный `typeMessage` / `statusMessage` не должен ронять разбор).
+- **Phase 3:** `validateSearch` роута логина → `{ reason?: <enum причины выхода> }`; таблица ошибок входа сравнивает `kind` с членами `enum`.
+- **Phase 6:** вид левой панели `"list" | "newChat"` → `enum`.
+- **Phase 7:** дискриминант элементов `buildListItems` (`date` / `message`) и частей `splitTextWithLinks` (`text` / `link`) → `enum`.
+- **Phase 9:** результат разбора уведомления (`message` / `status` / `ignored`), значения `typeWebhook` и `status` у `outgoingMessageStatus` → `enum`; неизвестный `typeWebhook` по-прежнему разбирается в `ignored`.
+
+### Phase 3 — added 2026-10-05
+**Trigger:** владелец (после phase-2): (1) у приложения нет фавиконки — браузер запрашивает `/favicon.ico`, получает 404, и проверка `app_boots` (консоль без ошибок) падает; (2) имена методов GREEN-API — закрытый набор, а сейчас это `string`; (3) ревьюер phase-2 iter-3: текст `GreenApiError.message` выбирается вложенным тернарником по `kind`, где `INVALID_RESPONSE` — неявная ветка «иначе», и новый член `enum` молча получил бы чужой текст.
+**Fix:**
+- `public/favicon.svg` — белая иконка `send` (Material Symbols Rounded, тот же источник и файл, что у `SendIcon` в Phase 4 п. 6: `send/materialsymbolsrounded/send_fill1_24px.svg`, путь скачивается `curl`'ом, по памяти не рисуется) на круге цвета `palette.primary` (`#3390ec`; файл статический, токен темы в нём недоступен — значение повторяет токен). `index.html` — `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`. Проверка `app_boots` дополнительно ожидает: запроса `/favicon.ico` с 404 нет.
+- Имена методов GREEN-API → строковый `enum` (`EGreenApiMethod`, члены — по используемым методам; Phase 9 добавит `receiveNotification` / `deleteNotification`); `method` запроса и `GreenApiError.method` типизируются им; повтор строки имени метода в сервисах уходит. Место — по лестнице `structure.md`.
+- Текст причины в `GreenApiError.message` выбирается исчерпывающе по `EGreenApiErrorKind` (`switch` с проверкой исчерпанности или справочник `Record<EGreenApiErrorKind, …>` из `typing.md`), чтобы пропущенный член был ошибкой компиляции; тексты сообщений не меняются, токен в них по-прежнему не попадает.
+
 ## Known issues

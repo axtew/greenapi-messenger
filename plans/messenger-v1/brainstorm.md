@@ -30,7 +30,7 @@
 - Очередь: удалять **все** уведомления, включая нетекстовые и служебные; пустой ответ по таймауту; ошибки сети и 429 → backoff.
 - Дедуп по `idMessage`: история ↔ очередь ↔ optimistic ↔ эхо `outgoingAPIMessageReceived`.
 - Текст: `textMessage` (ссылки приходят им же; `extendedTextMessage` из документации — принимать тоже); `outgoingMessageReceived` (отправлено с телефона) — показывать как исходящее.
-- `checkAccount`: `exist:false` (нет аккаунта или номер скрыт настройками приватности), 469 → понятные тексты; chatId по номеру кэшируется.
+- `checkAccount`: `exist:false` (нет аккаунта или номер скрыт настройками приватности), лимиты поиска (200 `rate_limit_exceeded` и HTTP 469) → понятные тексты; chatId по номеру кэшируется.
 - Лимит 3 чата **не моделируется** — только понятная ошибка на 466 / `quotaExceeded`.
 - Аватар: `getContactInfo` один раз на чат, кэш; нет аватара или ошибка загрузки → инициалы.
 - Непрочитанные: счётчик входящих в неактивный чат, сброс при открытии; хранится с чатом в localStorage.
@@ -108,7 +108,10 @@
 - **chatId — числовая строка** (`"10000000"`, группа — с минусом); `phone@c.us` принимается только для совместимости.
 - Тариф «Разработчик»: 3 чата; разные форматы id одного контакта считаются разными чатами; `checkAccount` — 100 вызовов в месяц; превышение — 466 / `quotaExceeded`.
 - **`checkAccount`** `POST {phoneNumber}` или `{username}` → `{exist, chatId, username, phoneNumber}`.
-  `exist:false` — нет аккаунта **или** номер скрыт настройками приватности. 469 / `rate_limit_exceeded` → пауза ~2 ч.
+  `exist:false` — нет аккаунта **или** номер скрыт настройками приватности. Лимитов два ([CheckAccount](https://green-api.com/telegram/docs/api/service/CheckAccount/)):
+  **HTTP 200** `{"status": false, "data": {"status": "fail", "reason": "rate_limit_exceeded", "retryAfter": …}}` — частые проверки разных номеров, пауза ~2 ч;
+  **HTTP 469** `{"status": false, "reason": "Rate limited by messenger"}` — Telegram ограничил аккаунту поиск, срок не сообщается.
+  Ещё **HTTP 200** `{"status": false, "reason": "instance is starting or not authorized"}` — инстанс не готов.
 - **`sendMessage`** `POST {chatId, message}` (≤ 4096 символов) → `{idMessage}`.
 - **`receiveNotification`** `GET ?receiveTimeout=5..60` → `{receiptId, body}` или пусто; пока не вызван `deleteNotification`, отдаётся то же уведомление.
   Одна FIFO-очередь на 24 ч. Требует `webhookUrl: ""` и включённых `incomingWebhook` / `outgoingWebhook` / `outgoingMessageWebhook` / `outgoingAPIMessageWebhook`.

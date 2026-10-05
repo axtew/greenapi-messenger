@@ -40,6 +40,7 @@ export interface I18n {
     phoneError: string;
     notFoundError: string;
     rateLimitError: string;
+    searchRestrictedError: string;
     genericError: string;
   };
   chat: {
