@@ -25,6 +25,7 @@ function makeMessage(id: string, timestamp: number, direction: EMessageDirection
     status: EMessageStatus.SENT,
     failReason: null,
     replacesId: null,
+    deletedMessageId: null,
     isDeleted: false,
   };
 }

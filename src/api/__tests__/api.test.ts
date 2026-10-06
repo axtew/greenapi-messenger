@@ -17,8 +17,10 @@ import {
 } from "@/api/services/account.service";
 import { checkAccount, getChatIds, getContact } from "@/api/services/chats.service";
 import { getChatHistory, sendMessage } from "@/api/services/messages.service";
+import { deleteNotification, receiveNotification } from "@/api/services/notifications.service";
 import { ESignOutReason, getSession, saveSession, signOut } from "@/api/session";
-import { EMessageDirection, EMessageStatus } from "@/types/messages.types";
+import { EMessageDirection, EMessageStatus, ESendFailReason } from "@/types/messages.types";
+import { ENotificationKind } from "@/types/notifications.types";
 
 const SESSION = { idInstance: "4100000001", apiTokenInstance: "secret-token-abc" };
 const SESSION_KEY = "greenapi-messenger:session";
@@ -374,7 +376,7 @@ describe("messages.service", () => {
         textMessage: "старый текст",
         isDeleted: true,
         deletedMessageId: "orig",
-        editedMessageId: "",
+        editedMessageId: "edit",
       },
       {
         ...base,
@@ -432,6 +434,7 @@ describe("messages.service", () => {
       status: EMessageStatus.SENT,
       failReason: null,
       replacesId: null,
+      deletedMessageId: null,
       isDeleted: false,
     });
     expect(messages[1].text).toBeNull();
@@ -441,7 +444,14 @@ describe("messages.service", () => {
     });
     expect(messages[3]).toMatchObject({ text: "исправлено", replacesId: "orig", isDeleted: false });
     // Текст удалённого сообщения из записи удаления не сохраняется.
-    expect(messages[4]).toMatchObject({ text: null, replacesId: "orig", isDeleted: true });
+    expect(messages[3]).toMatchObject({ deletedMessageId: null });
+    // Запись удаления отредактированного сообщения ссылается и на правку, и на оригинал.
+    expect(messages[4]).toMatchObject({
+      text: null,
+      replacesId: "edit",
+      deletedMessageId: "orig",
+      isDeleted: true,
+    });
     expect(lastRequest().init?.body).toBe(JSON.stringify({ chatId: "10000000", count: 100 }));
   });
 
@@ -452,5 +462,234 @@ describe("messages.service", () => {
     expect(lastRequest().init?.body).toBe(
       JSON.stringify({ chatId: "10000000", message: "привет" }),
     );
+  });
+});
+
+describe("notifications.service", () => {
+  const instanceData = {
+    idInstance: 4100000001,
+    wid: "79876543210@c.us",
+    typeInstance: "telegram",
+  };
+  const senderData = {
+    chatId: "10000000",
+    chatType: "user",
+    sender: "10000000",
+    chatName: "Василиса",
+    senderName: "Василиса Премудрая",
+    senderType: "user",
+    senderContactName: "",
+    senderPhoneNumber: 79998887766,
+  };
+
+  function messageBody(typeWebhook: string, messageData: object) {
+    return {
+      typeWebhook,
+      instanceData,
+      timestamp: 1700000000,
+      idMessage: "m1",
+      senderData,
+      messageData,
+    };
+  }
+
+  async function receive(body: unknown) {
+    respondJson({ receiptId: 7, body });
+
+    return receiveNotification(20, new AbortController().signal);
+  }
+
+  it("receiveNotification: GET с receiveTimeout и сигналом; пустая очередь (null) → null", async () => {
+    const signal = new AbortController().signal;
+    respondWith("null");
+
+    expect(await receiveNotification(20, signal)).toBeNull();
+    expect(lastRequest().url).toBe(
+      `https://api.green-api.com/waInstance${SESSION.idInstance}/receiveNotification/${SESSION.apiTokenInstance}?receiveTimeout=20`,
+    );
+    expect(lastRequest().init).toMatchObject({ method: EHttpMethod.GET, signal });
+  });
+
+  it("receiveNotification: 408 с пустым телом (пустая очередь) → null, а не ошибка", async () => {
+    respondWith("", 408);
+
+    expect(await receiveNotification(20, new AbortController().signal)).toBeNull();
+  });
+
+  it("receiveNotification: другие статусы по-прежнему ошибка", async () => {
+    respondWith("", 504);
+
+    const error = await catchError(receiveNotification(20, new AbortController().signal));
+
+    expect(error).toMatchObject({ kind: EGreenApiErrorKind.HTTP, status: 504 });
+  });
+
+  it("входящее текстовое → сообщение INCOMING с текстом и именем чата", async () => {
+    const result = await receive(
+      messageBody("incomingMessageReceived", {
+        typeMessage: "textMessage",
+        textMessageData: { textMessage: "привет", isForwarded: false, forwardingScore: 0 },
+      }),
+    );
+
+    expect(result).toEqual({
+      receiptId: 7,
+      notification: {
+        kind: ENotificationKind.MESSAGE,
+        chatName: "Василиса",
+        message: {
+          id: "m1",
+          chatId: "10000000",
+          direction: EMessageDirection.INCOMING,
+          text: "привет",
+          timestamp: 1700000000,
+          status: EMessageStatus.SENT,
+          failReason: null,
+          replacesId: null,
+          deletedMessageId: null,
+          isDeleted: false,
+        },
+      },
+    });
+  });
+
+  it.each(["outgoingMessageReceived", "outgoingAPIMessageReceived"])(
+    "%s → OUTGOING, extendedTextMessage — текст из extendedTextMessageData",
+    async (typeWebhook) => {
+      const result = await receive(
+        messageBody(typeWebhook, {
+          typeMessage: "extendedTextMessage",
+          extendedTextMessageData: { text: "https://green-api.com", title: "" },
+        }),
+      );
+
+      expect(result?.notification).toMatchObject({
+        kind: ENotificationKind.MESSAGE,
+        message: { direction: EMessageDirection.OUTGOING, text: "https://green-api.com" },
+      });
+    },
+  );
+
+  it("нетекстовое сообщение → текст null; пустое имя чата → имя отправителя", async () => {
+    const result = await receive({
+      ...messageBody("incomingMessageReceived", { typeMessage: "stickerMessage" }),
+      senderData: { ...senderData, chatName: "" },
+    });
+
+    expect(result?.notification).toMatchObject({
+      kind: ENotificationKind.MESSAGE,
+      chatName: "Василиса Премудрая",
+      message: { text: null, isDeleted: false },
+    });
+  });
+
+  it("правка → текст правки и ссылка на исходное", async () => {
+    const result = await receive(
+      messageBody("incomingMessageReceived", {
+        typeMessage: "editedMessage",
+        editedMessageData: { textMessage: "исправлено", stanzaId: "orig" },
+      }),
+    );
+
+    expect(result?.notification).toMatchObject({
+      kind: ENotificationKind.MESSAGE,
+      message: { text: "исправлено", replacesId: "orig", deletedMessageId: null, isDeleted: false },
+    });
+  });
+
+  it("удаление → запись удаления без текста со ссылками на удалённое", async () => {
+    const result = await receive(
+      messageBody("outgoingMessageReceived", {
+        typeMessage: "deletedMessage",
+        deletedMessageData: { stanzaId: "orig" },
+      }),
+    );
+
+    expect(result?.notification).toMatchObject({
+      kind: ENotificationKind.MESSAGE,
+      message: {
+        direction: EMessageDirection.OUTGOING,
+        text: null,
+        replacesId: "orig",
+        deletedMessageId: "orig",
+        isDeleted: true,
+      },
+    });
+  });
+
+  const statusBody = {
+    typeWebhook: "outgoingMessageStatus",
+    chatId: "10000000",
+    instanceData,
+    timestamp: 1700000000,
+    idMessage: "m1",
+    sendByApi: true,
+  };
+
+  it("failed с peer flood → недоставка с причиной PEER_FLOOD", async () => {
+    const result = await receive({ ...statusBody, status: "failed", description: "peer flood" });
+
+    expect(result?.notification).toEqual({
+      kind: ENotificationKind.MESSAGE_FAILED,
+      chatId: "10000000",
+      messageId: "m1",
+      failReason: ESendFailReason.PEER_FLOOD,
+    });
+  });
+
+  it.each([{ description: "chatId unresolvable on this session" }, {}])(
+    "failed с неизвестной или пустой причиной → причина null (%o)",
+    async (extra) => {
+      const result = await receive({ ...statusBody, status: "failed", ...extra });
+
+      expect(result?.notification).toMatchObject({
+        kind: ENotificationKind.MESSAGE_FAILED,
+        failReason: null,
+      });
+    },
+  );
+
+  it.each([
+    { name: "статус delivered", body: { ...statusBody, status: "delivered" } },
+    {
+      name: "неизвестный typeWebhook",
+      body: { typeWebhook: "stateInstanceChanged", instanceData },
+    },
+    {
+      name: "известный typeWebhook не той формы",
+      body: { typeWebhook: "incomingMessageReceived", instanceData },
+    },
+    {
+      name: "сообщение из группы",
+      body: {
+        ...messageBody("incomingMessageReceived", { typeMessage: "textMessage" }),
+        senderData: { ...senderData, chatId: "-10000000000000" },
+      },
+    },
+    { name: "тело null", body: null },
+  ])("$name → ignored, receiptId сохраняется", async ({ body }) => {
+    expect(await receive(body)).toEqual({
+      receiptId: 7,
+      notification: { kind: ENotificationKind.IGNORED },
+    });
+  });
+
+  it("ответ без receiptId → invalidResponse", async () => {
+    respondJson({ body: null });
+
+    const error = await catchError(receiveNotification(20, new AbortController().signal));
+
+    expect(error.kind).toBe(EGreenApiErrorKind.INVALID_RESPONSE);
+  });
+
+  it("deleteNotification: DELETE с receiptId в пути", async () => {
+    respondJson({ result: true, reason: "" });
+
+    await deleteNotification(7);
+
+    expect(lastRequest().url).toBe(
+      `https://api.green-api.com/waInstance${SESSION.idInstance}/deleteNotification/${SESSION.apiTokenInstance}/7`,
+    );
+    expect(lastRequest().init?.method).toBe(EHttpMethod.DELETE);
   });
 });

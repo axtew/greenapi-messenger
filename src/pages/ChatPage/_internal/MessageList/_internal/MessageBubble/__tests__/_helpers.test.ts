@@ -76,7 +76,12 @@ describe("splitTextWithLinks", () => {
 describe("getFailedLabel", () => {
   const l = {
     failedLabel: "Не доставлено",
-    sendErrors: { quota: "лимит", network: "нет связи", generic: "ошибка" },
+    sendErrors: {
+      [ESendFailReason.QUOTA]: "лимит",
+      [ESendFailReason.NETWORK]: "нет связи",
+      [ESendFailReason.GENERIC]: "ошибка",
+      [ESendFailReason.PEER_FLOOD]: "антиспам",
+    },
   };
 
   it("причина неизвестна — только пометка", () => {
@@ -87,6 +92,7 @@ describe("getFailedLabel", () => {
     { reason: ESendFailReason.QUOTA, label: "Не доставлено: лимит" },
     { reason: ESendFailReason.NETWORK, label: "Не доставлено: нет связи" },
     { reason: ESendFailReason.GENERIC, label: "Не доставлено: ошибка" },
+    { reason: ESendFailReason.PEER_FLOOD, label: "Не доставлено: антиспам" },
   ])("$reason → «$label»", ({ reason, label }) => {
     expect(getFailedLabel(reason, l)).toBe(label);
   });

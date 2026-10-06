@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 
-import type { IMessage } from "@/types/messages.types";
+import { EMessageStatus, type ESendFailReason, type IMessage } from "@/types/messages.types";
 
 /** Ключ запроса сообщений чата. */
 export function getMessagesQueryKey(chatId: string) {
@@ -29,6 +29,9 @@ export function updateMessages(
  * Запись с тем же `id` заменяет известную. Правка и удаление приходят отдельными записями со ссылкой на исходное сообщение
  * (`replacesId`): исходное убирается, а правка или запись удаления встаёт в ленту по своему времени (исходное время API не отдаёт);
  * запись удаления остаётся в ленте заглушкой «Сообщение удалено».
+ * Запись удаления убирает все версии удалённого сообщения: каждую запись, у которой `id` или `replacesId` совпадает
+ * с одной из её ссылок (`replacesId`, `deletedMessageId`). Иначе в ленте остались бы версии, на которые она не ссылается
+ * напрямую: исходное сообщение, когда удаление ссылается на правку, или вторая правка того же сообщения.
  * Сообщения с одинаковым временем остаются в порядке поступления: сначала известные, затем новые в порядке `incoming`.
  * Неотправленные (`local-*`) не трогаются, пока их не заменит запись с тем же `id`.
  */
@@ -44,6 +47,29 @@ export function mergeMessages(current: IMessage[], incoming: IMessage[]): IMessa
   const replacedIds = new Set(
     all.flatMap(({ replacesId }) => (replacesId === null ? [] : [replacesId])),
   );
+  const deletedIds = new Set(
+    all
+      .filter(({ isDeleted }) => isDeleted)
+      .flatMap(({ replacesId, deletedMessageId }) =>
+        [replacesId, deletedMessageId].filter((id) => id !== null),
+      ),
+  );
 
-  return all.filter(({ id }) => !replacedIds.has(id)).toSorted((a, b) => a.timestamp - b.timestamp);
+  const isVersionOfDeleted = ({ id, replacesId, isDeleted }: IMessage) =>
+    !isDeleted && (deletedIds.has(id) || (replacesId !== null && deletedIds.has(replacesId)));
+
+  return all
+    .filter((message) => !replacedIds.has(message.id) && !isVersionOfDeleted(message))
+    .toSorted((a, b) => a.timestamp - b.timestamp);
+}
+
+/** Помечает сообщение с этим `id` недоставленным с причиной; `null` — причина неизвестна. */
+export function markMessageFailed(
+  messages: IMessage[],
+  id: string,
+  failReason: ESendFailReason | null,
+): IMessage[] {
+  return messages.map((message) =>
+    message.id === id ? { ...message, status: EMessageStatus.FAILED, failReason } : message,
+  );
 }

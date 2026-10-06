@@ -9,13 +9,19 @@ export enum EMessageStatus {
   FAILED = "failed",
 }
 
-/** Почему сообщение не отправлено; текст для пользователя выбирает интерфейс. */
+/**
+ * Почему сообщение не отправлено; текст для пользователя выбирает интерфейс.
+ *
+ * Значения совпадают с именами членов: это ключи словаря `sendErrors`.
+ */
 export enum ESendFailReason {
   /** Ответ 466: исчерпан лимит тарифа инстанса. */
-  QUOTA = "quota",
+  QUOTA = "QUOTA",
   /** Ответа от GREEN-API не было: сбой сети. */
-  NETWORK = "network",
-  GENERIC = "generic",
+  NETWORK = "NETWORK",
+  GENERIC = "GENERIC",
+  /** Сервер принял сообщение, но Telegram отказал в доставке: антиспам ограничил отправку с этого аккаунта. */
+  PEER_FLOOD = "PEER_FLOOD",
 }
 
 export interface IMessage {
@@ -32,6 +38,13 @@ export interface IMessage {
   failReason: ESendFailReason | null;
   /** id сообщения, которое эта запись правит или удаляет. */
   replacesId: string | null;
+  /**
+   * id удалённого сообщения у записи удаления; у остальных записей — `null`.
+   *
+   * Отличается от `replacesId`, когда удалено отредактированное сообщение: тогда `replacesId` указывает на запись правки,
+   * а это поле — на исходное сообщение.
+   */
+  deletedMessageId: string | null;
   /** Запись удаления: в ленте и в превью списка — заглушка «Сообщение удалено». */
   isDeleted: boolean;
 }

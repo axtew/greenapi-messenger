@@ -14,7 +14,7 @@ import {
 import type { IContact, TCheckAccountResult } from "@/types/chats.types";
 import { formatContactHandle } from "@/utils/helpers/contactFormat";
 
-import { toNullable, toPhone, toUsername } from "./_helpers";
+import { isPersonalChatId, toNullable, toPhone, toUsername } from "./_helpers";
 
 /**
  * Ищет Telegram-аккаунт по номеру; `phone` — только цифры.
@@ -83,5 +83,5 @@ export async function getChatIds(): Promise<string[]> {
     schema: chatsSchema,
   });
 
-  return chats.map(({ chatId }) => chatId).filter((chatId) => Number(chatId) > 0);
+  return chats.map(({ chatId }) => chatId).filter(isPersonalChatId);
 }

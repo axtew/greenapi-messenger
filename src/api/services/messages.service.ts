@@ -56,6 +56,7 @@ export async function getChatHistory(chatId: string, count: number): Promise<IMe
         entry.statusMessage === EStatusMessage.FAILED ? EMessageStatus.FAILED : EMessageStatus.SENT,
       failReason: null,
       replacesId: entry.editedMessageId || entry.deletedMessageId || null,
+      deletedMessageId: entry.deletedMessageId || null,
       isDeleted: entry.isDeleted ?? false,
     }))
     .toSorted((a, b) => a.timestamp - b.timestamp);

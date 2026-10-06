@@ -54,8 +54,9 @@
     "sendButton": "Отправить"
   },
   "sendErrors": {
-    "quota": "превышен лимит тарифа",
-    "network": "нет связи с GREEN-API",
-    "generic": "ошибка отправки"
+    "QUOTA": "превышен лимит тарифа",
+    "NETWORK": "нет связи с GREEN-API",
+    "GENERIC": "ошибка отправки",
+    "PEER_FLOOD": "Telegram ограничил отправку сообщений с этого аккаунта"
   }
 }

@@ -6,10 +6,16 @@ export enum EChatHistoryEntryType {
   OUTGOING = "outgoing",
 }
 
-/** Значения `typeMessage`, из которых берётся текст; остальные типы (стикер, фото…) схема пропускает как строку. */
+/**
+ * Значения `typeMessage`, которые проверяет код; остальные типы (стикер, фото…) схема пропускает как строку.
+ *
+ * Правка и удаление бывают таким типом только в уведомлениях: в истории это отдельные записи со ссылкой на исходное сообщение.
+ */
 export enum ETypeMessage {
   TEXT_MESSAGE = "textMessage",
   EXTENDED_TEXT_MESSAGE = "extendedTextMessage",
+  EDITED_MESSAGE = "editedMessage",
+  DELETED_MESSAGE = "deletedMessage",
 }
 
 /** Значения `statusMessage` исходящего сообщения, которые проверяет код; остальные схема пропускает как строку. */

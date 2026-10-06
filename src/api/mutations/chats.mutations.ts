@@ -65,6 +65,26 @@ export async function createChat(
   return chatId;
 }
 
+/**
+ * Загружает профиль собеседника чата и записывает его в список; профиль помечается загруженным.
+ *
+ * Если запрос не удался, чат в списке не меняется.
+ */
+export async function enrichChat(
+  queryClient: QueryClient,
+  idInstance: string,
+  chatId: string,
+): Promise<void> {
+  try {
+    const contact = await getContact(chatId);
+    updateChats(queryClient, idInstance, (chats) =>
+      upsertContact(chats, contact, { isProfileLoaded: true }),
+    );
+  } catch {
+    // Временный профиль остаётся: синхронизация списка запросит его снова, если чат окажется среди синхронизируемых.
+  }
+}
+
 /** Новый чат по номеру телефона (только цифры); результат — chatId чата в списке. */
 export function useCreateChatMutation() {
   const queryClient = useQueryClient();

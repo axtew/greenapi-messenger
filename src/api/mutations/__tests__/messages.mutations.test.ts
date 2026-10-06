@@ -8,12 +8,7 @@ import {
   type IMessage,
 } from "@/types/messages.types";
 
-import {
-  confirmLocalMessage,
-  createLocalMessage,
-  failLocalMessage,
-  getSendFailReason,
-} from "../messages.mutations";
+import { confirmLocalMessage, createLocalMessage, getSendFailReason } from "../messages.mutations";
 
 const CHAT_ID = "334346886";
 const LOCAL_ID = "local-1";
@@ -29,6 +24,7 @@ function makeMessage(overrides: Partial<IMessage>): IMessage {
     status: EMessageStatus.SENT,
     failReason: null,
     replacesId: null,
+    deletedMessageId: null,
     isDeleted: false,
     ...overrides,
   };
@@ -55,6 +51,7 @@ describe("createLocalMessage", () => {
       status: EMessageStatus.SENDING,
       failReason: null,
       replacesId: null,
+      deletedMessageId: null,
       isDeleted: false,
     });
   });
@@ -83,15 +80,6 @@ describe("confirmLocalMessage", () => {
 
   it("локального нет в ленте — лента не меняется", () => {
     expect(confirmLocalMessage([earlier], LOCAL_ID, ID_MESSAGE)).toEqual([earlier]);
-  });
-});
-
-describe("failLocalMessage", () => {
-  it("локальное помечается недоставленным с причиной, остальные не меняются", () => {
-    expect(failLocalMessage([earlier, local], LOCAL_ID, ESendFailReason.NETWORK)).toEqual([
-      earlier,
-      { ...local, status: EMessageStatus.FAILED, failReason: ESendFailReason.NETWORK },
-    ]);
   });
 });
 

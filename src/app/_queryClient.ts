@@ -1,11 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 
-import { GreenApiError } from "@/api/greenApi";
+import { GreenApiError, isUnauthorized } from "@/api/greenApi";
 import { ESignOutReason, signOut } from "@/api/session";
-
-function isUnauthorized(error: Error): boolean {
-  return error instanceof GreenApiError && error.status === 401;
-}
 
 /**
  * Стоит ли повторять запрос: нет — только для ответа GREEN-API со статусом ниже 500, кроме 429; любая другая ошибка повторяется.

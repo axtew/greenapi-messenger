@@ -1,5 +1,5 @@
 import type { I18n } from "@/types/i18n.types";
-import { ESendFailReason } from "@/types/messages.types";
+import type { ESendFailReason } from "@/types/messages.types";
 
 import { ETextPartKind, type ITextPart } from "./_types";
 
@@ -45,11 +45,5 @@ export function getFailedLabel(
     return l.failedLabel;
   }
 
-  const reasons: Record<ESendFailReason, string> = {
-    [ESendFailReason.QUOTA]: l.sendErrors.quota,
-    [ESendFailReason.NETWORK]: l.sendErrors.network,
-    [ESendFailReason.GENERIC]: l.sendErrors.generic,
-  };
-
-  return `${l.failedLabel}: ${reasons[failReason]}`;
+  return `${l.failedLabel}: ${l.sendErrors[failReason]}`;
 }

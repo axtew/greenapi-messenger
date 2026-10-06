@@ -11,6 +11,7 @@ import { EKeyboardKey } from "@/types/common.types";
 import { AccountMenu } from "./_internal/AccountMenu";
 import { ChatListItem } from "./_internal/ChatListItem";
 import { NewChatPanel } from "./_internal/NewChatPanel";
+import { SettingsWarning } from "./_internal/SettingsWarning";
 import {
   SBody,
   SEmpty,
@@ -32,7 +33,7 @@ enum ESidebarView {
 }
 
 /**
- * Левая панель мессенджера: шапка с меню аккаунта и список чатов либо панель «Новый чат».
+ * Левая панель мессенджера: шапка с меню аккаунта, предупреждение о настройках инстанса и список чатов либо панель «Новый чат».
  *
  * Список чатов запрашивается при любом виде: запрос должен существовать с первого рендера каркаса.
  * Панель «Новый чат» закрывается кнопкой «назад» или `Escape` при фокусе внутри панели; после закрытия фокус
@@ -88,6 +89,8 @@ export function Sidebar() {
         <AccountMenu />
         <H3 as="h2">{l.title}</H3>
       </SHeader>
+
+      <SettingsWarning />
 
       <SBody>
         {isError && (

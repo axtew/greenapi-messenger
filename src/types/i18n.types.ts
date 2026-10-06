@@ -1,3 +1,5 @@
+import type { ESendFailReason } from "@/types/messages.types";
+
 /** Форма словаря `public/dictionaries/*.json`. */
 export interface I18n {
   login: {
@@ -54,9 +56,5 @@ export interface I18n {
     composerPlaceholder: string;
     sendButton: string;
   };
-  sendErrors: {
-    quota: string;
-    network: string;
-    generic: string;
-  };
+  sendErrors: Record<ESendFailReason, string>;
 }

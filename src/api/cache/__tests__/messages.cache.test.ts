@@ -1,9 +1,19 @@
 import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 
-import { EMessageDirection, EMessageStatus, type IMessage } from "@/types/messages.types";
+import {
+  EMessageDirection,
+  EMessageStatus,
+  ESendFailReason,
+  type IMessage,
+} from "@/types/messages.types";
 
-import { getMessagesQueryKey, mergeMessages, updateMessages } from "../messages.cache";
+import {
+  getMessagesQueryKey,
+  markMessageFailed,
+  mergeMessages,
+  updateMessages,
+} from "../messages.cache";
 
 const CHAT_ID = "100";
 
@@ -17,6 +27,7 @@ function makeMessage(id: string, timestamp: number, overrides: Partial<IMessage>
     status: EMessageStatus.SENT,
     failReason: null,
     replacesId: null,
+    deletedMessageId: null,
     isDeleted: false,
     ...overrides,
   };
@@ -79,6 +90,59 @@ describe("mergeMessages", () => {
     const deletion = makeMessage("d", 40, { text: null, replacesId: "a", isDeleted: true });
 
     expect(getIds(mergeMessages([deletion], [deletion]))).toEqual(["d"]);
+  });
+
+  it("удаление со ссылкой на правку убирает и оригинал, которого правка в кэше не заменила", () => {
+    const original = makeMessage("a", 10, { text: "было" });
+    const deletion = makeMessage("d", 40, {
+      text: null,
+      replacesId: "edit",
+      deletedMessageId: "a",
+      isDeleted: true,
+    });
+
+    expect(mergeMessages([original, makeMessage("b", 20)], [deletion])).toEqual([
+      makeMessage("b", 20),
+      deletion,
+    ]);
+  });
+
+  it("удаление убирает все правки того же сообщения, а не только ту, на которую ссылается", () => {
+    const original = makeMessage("a", 10);
+    const firstEdit = makeMessage("e1", 20, { replacesId: "a" });
+    const secondEdit = makeMessage("e2", 30, { replacesId: "a" });
+    const deletion = makeMessage("d", 40, {
+      text: null,
+      replacesId: "e2",
+      deletedMessageId: "a",
+      isDeleted: true,
+    });
+
+    expect(mergeMessages([original, firstEdit, secondEdit], [deletion])).toEqual([deletion]);
+  });
+
+  it("удаление из уведомления (обе ссылки — на оригинал) убирает оригинал и его правку", () => {
+    const original = makeMessage("a", 10);
+    const edit = makeMessage("e", 20, { replacesId: "a" });
+    const deletion = makeMessage("d", 40, {
+      text: null,
+      replacesId: "a",
+      deletedMessageId: "a",
+      isDeleted: true,
+    });
+
+    expect(mergeMessages([original, edit, makeMessage("b", 30)], [deletion])).toEqual([
+      makeMessage("b", 30),
+      deletion,
+    ]);
+  });
+
+  it("две правки одного сообщения без удаления остаются обе", () => {
+    const original = makeMessage("a", 10);
+    const firstEdit = makeMessage("e1", 20, { replacesId: "a" });
+    const secondEdit = makeMessage("e2", 30, { replacesId: "a" });
+
+    expect(getIds(mergeMessages([original], [firstEdit, secondEdit]))).toEqual(["e1", "e2"]);
   });
 
   it("сортировка по времени, при равенстве — по порядку поступления", () => {
@@ -162,5 +226,31 @@ describe("updateMessages", () => {
     ]);
 
     expect(getIds(next)).toEqual(["a"]);
+  });
+});
+
+describe("markMessageFailed", () => {
+  it("сообщение с этим id помечается недоставленным с причиной, остальные не меняются", () => {
+    const other = makeMessage("a", 10);
+    const target = makeMessage("b", 20, { direction: EMessageDirection.OUTGOING });
+
+    expect(markMessageFailed([other, target], "b", ESendFailReason.NETWORK)).toEqual([
+      other,
+      { ...target, status: EMessageStatus.FAILED, failReason: ESendFailReason.NETWORK },
+    ]);
+  });
+
+  it("причина может быть неизвестна", () => {
+    const target = makeMessage("b", 20, { direction: EMessageDirection.OUTGOING });
+
+    expect(markMessageFailed([target], "b", null)).toEqual([
+      { ...target, status: EMessageStatus.FAILED, failReason: null },
+    ]);
+  });
+
+  it("нет сообщения с таким id — список не меняется", () => {
+    const messages = [makeMessage("a", 10)];
+
+    expect(markMessageFailed(messages, "missing", ESendFailReason.GENERIC)).toEqual(messages);
   });
 });

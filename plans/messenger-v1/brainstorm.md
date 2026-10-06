@@ -127,7 +127,7 @@
 - **У нового инстанса все уведомления выключены** (`incomingWebhook`, `outgoingWebhook`, `outgoingMessageWebhook`, `outgoingAPIMessageWebhook`,
   `stateWebhook` = `"no"`), `webhookUrl` пуст. Проверка настроек на логине — не перестраховка: свежий инстанс без неё молча ничего не получает.
 - `getSettings` отвечает и для неавторизованного инстанса.
-- Пустая очередь по таймауту — тело `null`, статус 200.
+- Пустая очередь по таймауту — тело `null`, статус 200 **или** HTTP 408 с пустым телом (nginx; замечено 2026-10-06, чаще, чем 200) — оба считаются пустым циклом.
 - `checkAccount` → `{"exist":true,"chatId":"334346886","username":"@…","phoneNumber":7988…,"fromCache":false}`.
 - `getContactInfo` → `avatar` вида `https://4100.api.green-api.com/download/avatar/<id>.jpg`: отдаёт редирект на подписанную ссылку S3,
   живущую 24 ч; сама ссылка GREEN-API стабильна — её и кэшируем, `<img>` проходит редирект сам.

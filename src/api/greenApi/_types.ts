@@ -24,11 +24,14 @@ export enum EGreenApiMethod {
   GET_CHATS = "getChats",
   GET_CHAT_HISTORY = "getChatHistory",
   SEND_MESSAGE = "sendMessage",
+  RECEIVE_NOTIFICATION = "receiveNotification",
+  DELETE_NOTIFICATION = "deleteNotification",
 }
 
 export enum EHttpMethod {
   GET = "GET",
   POST = "POST",
+  DELETE = "DELETE",
 }
 
 export interface IGreenApiRequestOptions<T> {

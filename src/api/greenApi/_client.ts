@@ -34,6 +34,11 @@ export class GreenApiError extends Error {
   }
 }
 
+/** Ответ GREEN-API со статусом 401: учётные данные инстанса больше не действуют (или сессии нет). */
+export function isUnauthorized(error: unknown): boolean {
+  return error instanceof GreenApiError && error.status === 401;
+}
+
 /**
  * Выполняет запрос к GREEN-API и возвращает тело ответа, проверенное схемой.
  *

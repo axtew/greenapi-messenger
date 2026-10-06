@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { applyLastMessage, updateChats } from "@/api/cache/chats.cache";
-import { mergeMessages, updateMessages } from "@/api/cache/messages.cache";
+import { markMessageFailed, mergeMessages, updateMessages } from "@/api/cache/messages.cache";
 import { EGreenApiErrorKind, GreenApiError } from "@/api/greenApi";
 import { sendMessage } from "@/api/services/messages.service";
 import { getSession } from "@/api/session";
@@ -26,6 +26,7 @@ export function createLocalMessage(chatId: string, text: string, now: number): I
     status: EMessageStatus.SENDING,
     failReason: null,
     replacesId: null,
+    deletedMessageId: null,
     isDeleted: false,
   };
 }
@@ -47,17 +48,6 @@ export function confirmLocalMessage(
 
   return messages.map((message) =>
     message.id === localId ? { ...message, id: idMessage, status: EMessageStatus.SENT } : message,
-  );
-}
-
-/** Помечает локальное сообщение недоставленным с причиной. */
-export function failLocalMessage(
-  messages: IMessage[],
-  localId: string,
-  failReason: ESendFailReason,
-): IMessage[] {
-  return messages.map((message) =>
-    message.id === localId ? { ...message, status: EMessageStatus.FAILED, failReason } : message,
   );
 }
 
@@ -123,7 +113,7 @@ export function useSendMessageMutation(chatId: string) {
     onError: (error, _text, context) => {
       if (context !== undefined) {
         updateMessages(queryClient, chatId, (messages) =>
-          failLocalMessage(messages, context.localId, getSendFailReason(error)),
+          markMessageFailed(messages, context.localId, getSendFailReason(error)),
         );
       }
     },

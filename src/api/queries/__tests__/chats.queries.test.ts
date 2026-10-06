@@ -54,6 +54,7 @@ function makeMessage(
     status: EMessageStatus.SENT,
     failReason: null,
     replacesId: null,
+    deletedMessageId: null,
     isDeleted: false,
     ...overrides,
   };
