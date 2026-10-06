@@ -5,7 +5,11 @@
 
 | Задача | Статус | Обсуждение | План | Журнал |
 |---|---|---|---|---|
-| `messenger-v1` — базовый сценарий ТЗ | план готов, фазы не начаты | [brainstorm.md](messenger-v1/brainstorm.md) | [plan.md](messenger-v1/plan.md) (10 фаз) | — |
+| `messenger-v1` — базовый сценарий ТЗ | выполнено: фазы 1–10 и заходы `chore-tests`, `chore-ui`, `chore-deleted`, `chore-deploy` | [brainstorm.md](messenger-v1/brainstorm.md) | [plan.md](messenger-v1/plan.md) (10 фаз, 23 поправки в `## Amendments`) | [EXECUTION.md](messenger-v1/EXECUTION.md) |
+
+Поправки плана (`## Amendments` в конце `plan.md`) — решения, принятые по ходу: расхождения API с документацией, найденные ревью дефекты,
+решения владельца. Заходы `chore-*` — работа вне фаз (перенос тестов, мелкие правки UI, «Сообщение удалено», проверка деплоя).
+Идеи сверх ТЗ — в [BACKLOG.md](../BACKLOG.md).
 
 Раскладка внутри задачи: `plan.md` — фазы и критерии приёмки; `<phase>/iter-<N>/` — отчёты разработчика, `REVIEW.md`, `VISUAL.md`;
 `EXECUTION.md` — журнал прогона.

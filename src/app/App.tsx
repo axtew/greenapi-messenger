@@ -13,7 +13,7 @@ import { queryClient } from "./_queryClient";
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools />
+      <ReactQueryDevtools buttonPosition="bottom-left" />
 
       <ThemeProvider theme={theme}>
         <GlobalStyle />

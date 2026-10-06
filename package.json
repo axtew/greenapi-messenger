@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "format": "prettier --write src",
     "test": "vitest run",
+    "e2e": "playwright test",
     "deploy": "pnpm build && wrangler deploy"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tanstack/react-query-devtools": "^5.104.1",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",

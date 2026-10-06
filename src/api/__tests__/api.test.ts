@@ -18,7 +18,7 @@ import {
 import { checkAccount, getChatIds, getContact } from "@/api/services/chats.service";
 import { getChatHistory, sendMessage } from "@/api/services/messages.service";
 import { deleteNotification, receiveNotification } from "@/api/services/notifications.service";
-import { ESignOutReason, getSession, saveSession, signOut } from "@/api/session";
+import { ESignOutReason, getSession, saveSession } from "@/api/session";
 import { EMessageDirection, EMessageStatus, ESendFailReason } from "@/types/messages.types";
 import { ENotificationKind } from "@/types/notifications.types";
 
@@ -69,6 +69,13 @@ afterEach(() => {
 });
 
 describe("session", () => {
+  /** `signOut` срабатывает один раз за жизнь модуля — каждому тесту нужен свежий экземпляр модуля. */
+  async function importFreshSignOut() {
+    vi.resetModules();
+
+    return (await import("@/api/session")).signOut;
+  }
+
   it("возвращает сохранённую сессию", () => {
     expect(getSession()).toEqual(SESSION);
   });
@@ -85,16 +92,30 @@ describe("session", () => {
     expect(getSession()).toBeNull();
   });
 
-  it("signOut чистит сессию и уходит на вход с причиной", () => {
+  it("signOut чистит сессию и уходит на вход с причиной", async () => {
+    const signOut = await importFreshSignOut();
+
     signOut(ESignOutReason.EXPIRED);
 
     expect(getSession()).toBeNull();
     expect(assignMock).toHaveBeenCalledWith("/login?reason=expired");
   });
 
-  it("signOut без причины уходит на чистый /login", () => {
+  it("signOut без причины уходит на чистый /login", async () => {
+    const signOut = await importFreshSignOut();
+
     signOut();
 
+    expect(assignMock).toHaveBeenCalledWith("/login");
+  });
+
+  it("повторный signOut не перебивает первый переход", async () => {
+    const signOut = await importFreshSignOut();
+
+    signOut();
+    signOut(ESignOutReason.EXPIRED);
+
+    expect(assignMock).toHaveBeenCalledOnce();
     expect(assignMock).toHaveBeenCalledWith("/login");
   });
 });
