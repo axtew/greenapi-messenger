@@ -18,10 +18,14 @@ interface IChatListItemProps {
 
 /** Строка списка чатов — ссылка на чат: аватар, имя, превью последнего сообщения, время и число непрочитанных. */
 export function ChatListItem({ chat }: IChatListItemProps) {
-  const l = useI18nSelector(({ l }) => ({ unsupportedMessage: l.chat.unsupportedMessage }));
+  const l = useI18nSelector(({ l }) => ({
+    unsupportedMessage: l.chat.unsupportedMessage,
+    deletedMessage: l.chat.deletedMessage,
+  }));
   const { chatId, name, avatarUrl, lastMessage, unreadCount } = chat;
   const isSelected = useParams({ strict: false }).chatId === chatId;
   const mutedColor = isSelected ? "onPrimary" : "textMuted";
+  const isDeleted = lastMessage !== null && lastMessage.isDeleted;
 
   return (
     <SLink to={routerPaths.chat} params={{ chatId }} $isSelected={isSelected}>
@@ -38,8 +42,9 @@ export function ChatListItem({ chat }: IChatListItemProps) {
         </SRow>
 
         <SRow>
-          <SPreview forwardedAs="span" color={mutedColor}>
-            {lastMessage === null ? null : (lastMessage.text ?? l.unsupportedMessage)}
+          <SPreview forwardedAs="span" color={mutedColor} $isItalic={isDeleted}>
+            {lastMessage !== null &&
+              (isDeleted ? l.deletedMessage : (lastMessage.text ?? l.unsupportedMessage))}
           </SPreview>
           {unreadCount > 0 && (
             <SBadge>

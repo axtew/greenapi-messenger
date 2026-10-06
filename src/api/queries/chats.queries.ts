@@ -27,16 +27,21 @@ async function fetchContact(chatId: string): Promise<IContact | null> {
   }
 }
 
-/** Снимок последнего сообщения чата; `null`, если сообщений нет, последнее удалено или запрос не удался. */
+/** Снимок последнего сообщения чата, в том числе записи удаления; `null`, если сообщений нет или запрос не удался. */
 async function fetchLastMessage(chatId: string): Promise<IChatLastMessage | null> {
   try {
     const [message] = await getChatHistory(chatId, 1);
 
-    if (message === undefined || message.isDeleted) {
+    if (message === undefined) {
       return null;
     }
 
-    return { text: message.text, timestamp: message.timestamp, direction: message.direction };
+    return {
+      text: message.text,
+      timestamp: message.timestamp,
+      direction: message.direction,
+      isDeleted: message.isDeleted,
+    };
   } catch {
     return null;
   }

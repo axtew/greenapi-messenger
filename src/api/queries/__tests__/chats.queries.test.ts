@@ -180,7 +180,7 @@ describe("синхронизация списка чатов", () => {
     expect(readStoredChats(ID_INSTANCE)).toEqual([known]);
   });
 
-  it("берёт первые 10 чатов и последнее неудалённое сообщение; сбой истории синхронизацию не прерывает", async () => {
+  it("берёт первые 10 чатов и последнюю запись истории, включая удаление; сбой истории синхронизацию не прерывает", async () => {
     const chatIds = Array.from({ length: 12 }, (_, index) => String(index + 1));
     getChatIdsMock.mockResolvedValue(chatIds);
     getChatHistoryMock.mockImplementation((chatId) => {
@@ -189,7 +189,9 @@ describe("синхронизация списка чатов", () => {
       }
 
       if (chatId === "2") {
-        return Promise.resolve([makeMessage(chatId, 200, { isDeleted: true })]);
+        return Promise.resolve([
+          makeMessage(chatId, 200, { text: null, replacesId: "orig", isDeleted: true }),
+        ]);
       }
 
       return Promise.reject(new Error("network"));
@@ -201,17 +203,32 @@ describe("синхронизация списка чатов", () => {
 
     expect(chats).toHaveLength(10);
     expect(getChatHistoryMock.mock.calls.every(([, count]) => count === 1)).toBe(true);
-    expect(chats[0]).toMatchObject({
-      chatId: "1",
-      lastMessage: { text: "текст 1", timestamp: 100, direction: EMessageDirection.INCOMING },
+    expect(chats.slice(0, 2).map(({ chatId }) => chatId)).toEqual(["2", "1"]);
+    expect(chats.find(({ chatId }) => chatId === "1")).toMatchObject({
+      lastMessage: {
+        text: "текст 1",
+        timestamp: 100,
+        direction: EMessageDirection.INCOMING,
+        isDeleted: false,
+      },
     });
-    expect(chats.find(({ chatId }) => chatId === "2")?.lastMessage).toBeNull();
+    expect(chats.find(({ chatId }) => chatId === "2")?.lastMessage).toEqual({
+      text: null,
+      timestamp: 200,
+      direction: EMessageDirection.INCOMING,
+      isDeleted: true,
+    });
   });
 
   it("сливает результат с кэшем на момент окончания и сохраняет локальные чаты", async () => {
     storeChats([
       makeChat("local", {
-        lastMessage: { text: "x", timestamp: 50, direction: EMessageDirection.OUTGOING },
+        lastMessage: {
+          text: "x",
+          timestamp: 50,
+          direction: EMessageDirection.OUTGOING,
+          isDeleted: false,
+        },
       }),
     ]);
     getChatIdsMock.mockResolvedValue(["1"]);

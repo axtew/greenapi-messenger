@@ -95,6 +95,23 @@ describe("buildListItems", () => {
     expect(describeItems(items)).toEqual(["[Сегодня]", "a", "b:last", "c", "d:last", "e:last"]);
   });
 
+  it("заглушка удалённого входит в группу своего отправителя", () => {
+    const deletion: IMessage = {
+      ...makeMessage("del", at(6, 10, 1), OUT),
+      text: null,
+      replacesId: "x",
+      isDeleted: true,
+    };
+
+    const items = buildListItems(
+      [makeMessage("a", at(6, 10), OUT), deletion, makeMessage("b", at(6, 10, 2), IN)],
+      NOW,
+      LABELS,
+    );
+
+    expect(describeItems(items)).toEqual(["[Сегодня]", "a", "del:last", "b:last"]);
+  });
+
   it("смена дня закрывает группу даже при том же направлении", () => {
     const items = buildListItems(
       [makeMessage("a", at(5, 23, 59), OUT), makeMessage("b", at(6, 0, 1), OUT)],

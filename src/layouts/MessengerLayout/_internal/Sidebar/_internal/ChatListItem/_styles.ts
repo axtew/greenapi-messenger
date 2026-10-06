@@ -59,8 +59,10 @@ export const SName = styled(H3)`
   ${ellipsis}
 `;
 
-export const SPreview = styled(B1)`
+/** Превью последнего сообщения; курсивом — заглушка удалённого. */
+export const SPreview = styled(B1)<{ $isItalic: boolean }>`
   ${ellipsis}
+  font-style: ${({ $isItalic }) => ($isItalic ? "italic" : "normal")};
 `;
 
 export const SBadge = styled.span`

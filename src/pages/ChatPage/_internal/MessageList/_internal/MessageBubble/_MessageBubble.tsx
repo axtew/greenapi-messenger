@@ -6,14 +6,14 @@ import { EMessageDirection, EMessageStatus } from "@/types/messages.types";
 import { formatMessageTime } from "@/utils/helpers/dateFormat";
 
 import { splitTextWithLinks } from "./_helpers";
-import { SBubble, SLink, SMeta, SRow, SUnsupported } from "./_styles";
+import { SBubble, SLink, SMeta, SNotice, SRow } from "./_styles";
 import { ETextPartKind, type IMessageBubbleProps } from "./_types";
 
 /**
  * Пузырь сообщения: текст с кликабельными ссылками и время отправки.
  *
- * Нетекстовое сообщение (стикер, фото…) показывается пометкой о том, что тип не поддерживается.
- * Недоставленное — пометкой с причиной вместо времени; ещё не принятое сервером — полупрозрачным временем.
+ * Удалённое сообщение показывается приглушённой пометкой «Сообщение удалено», нетекстовое (стикер, фото…) — пометкой о том,
+ * что тип не поддерживается. Недоставленное — пометкой с причиной вместо времени; ещё не принятое сервером — полупрозрачным временем.
  */
 export function MessageBubble({ message, isLastInGroup }: IMessageBubbleProps) {
   const l = useI18nSelector(({ l }) => l.chat);
@@ -24,9 +24,9 @@ export function MessageBubble({ message, isLastInGroup }: IMessageBubbleProps) {
   return (
     <SRow $isOutgoing={isOutgoing} $isLastInGroup={isLastInGroup}>
       <SBubble $isOutgoing={isOutgoing} $isLastInGroup={isLastInGroup}>
-        <B1 as="div">
-          {message.text === null ? (
-            <SUnsupported>{l.unsupportedMessage}</SUnsupported>
+        <B1 as="div" color={message.isDeleted ? "textMuted" : undefined}>
+          {message.isDeleted || message.text === null ? (
+            <SNotice>{message.isDeleted ? l.deletedMessage : l.unsupportedMessage}</SNotice>
           ) : (
             splitTextWithLinks(message.text).map((part, index) =>
               part.kind === ETextPartKind.LINK ? (

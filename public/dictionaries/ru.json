@@ -48,6 +48,7 @@
     "today": "Сегодня",
     "yesterday": "Вчера",
     "unsupportedMessage": "Сообщение этого типа не поддерживается",
+    "deletedMessage": "Сообщение удалено",
     "failedLabel": "Не доставлено",
     "composerPlaceholder": "Сообщение",
     "sendButton": "Отправить"

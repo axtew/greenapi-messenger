@@ -50,7 +50,8 @@ export const SBubble = styled.div<{ $isOutgoing: boolean; $isLastInGroup: boolea
     `}
 `;
 
-export const SUnsupported = styled.span`
+/** Служебная пометка вместо текста сообщения: удалено или тип не поддерживается. */
+export const SNotice = styled.span`
   font-style: italic;
 `;
 

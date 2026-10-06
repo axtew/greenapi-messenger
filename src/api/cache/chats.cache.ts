@@ -19,6 +19,8 @@ const storedChatsSchema: z.ZodType<IChat[]> = z.array(
         text: z.string().nullable(),
         timestamp: z.number(),
         direction: z.enum(EMessageDirection),
+        // В списках, сохранённых до появления поля, его нет: такой снимок — неудалённое сообщение.
+        isDeleted: z.boolean().default(false),
       })
       .nullable(),
     unreadCount: z.number().int().nonnegative(),

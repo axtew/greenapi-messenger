@@ -27,7 +27,8 @@ export function updateMessages(
  * Сливает новые записи с известными сообщениями чата и возвращает видимые сообщения по возрастанию времени.
  *
  * Запись с тем же `id` заменяет известную. Правка и удаление приходят отдельными записями со ссылкой на исходное сообщение
- * (`replacesId`): исходное убирается, правка встаёт в ленту по времени правки (исходное время API не отдаёт), запись удаления не показывается.
+ * (`replacesId`): исходное убирается, а правка или запись удаления встаёт в ленту по своему времени (исходное время API не отдаёт);
+ * запись удаления остаётся в ленте заглушкой «Сообщение удалено».
  * Сообщения с одинаковым временем остаются в порядке поступления: сначала известные, затем новые в порядке `incoming`.
  * Неотправленные (`local-*`) не трогаются, пока их не заменит запись с тем же `id`.
  */
@@ -44,7 +45,5 @@ export function mergeMessages(current: IMessage[], incoming: IMessage[]): IMessa
     all.flatMap(({ replacesId }) => (replacesId === null ? [] : [replacesId])),
   );
 
-  return all
-    .filter(({ id, isDeleted }) => !isDeleted && !replacedIds.has(id))
-    .toSorted((a, b) => a.timestamp - b.timestamp);
+  return all.filter(({ id }) => !replacedIds.has(id)).toSorted((a, b) => a.timestamp - b.timestamp);
 }

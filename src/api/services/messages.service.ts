@@ -10,7 +10,16 @@ import {
 } from "@/api/schemas/messages.schema";
 import { EMessageDirection, EMessageStatus, type IMessage } from "@/types/messages.types";
 
+/**
+ * Текст записи истории; `null` — нетекстовое сообщение или запись удаления.
+ *
+ * Запись удаления несёт текст удалённого сообщения — он отбрасывается здесь, чтобы не попасть ни в ленту, ни в превью списка.
+ */
 function getHistoryText(entry: z.infer<typeof chatHistorySchema>[number]): string | null {
+  if (entry.isDeleted === true) {
+    return null;
+  }
+
   switch (entry.typeMessage) {
     case ETypeMessage.TEXT_MESSAGE:
       return entry.textMessage ?? null;
@@ -21,7 +30,7 @@ function getHistoryText(entry: z.infer<typeof chatHistorySchema>[number]): strin
   }
 }
 
-/** Последние `count` сообщений чата по возрастанию времени, включая записи правок и удалений. */
+/** Последние `count` сообщений чата по возрастанию времени, включая записи правок и удалений (у записи удаления текста нет). */
 export async function getChatHistory(chatId: string, count: number): Promise<IMessage[]> {
   const entries = await greenApiRequest({
     method: EGreenApiMethod.GET_CHAT_HISTORY,

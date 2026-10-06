@@ -14,7 +14,7 @@ export interface IMessage {
   id: string;
   chatId: string;
   direction: EMessageDirection;
-  /** `null` — неподдерживаемый тип сообщения (стикер, фото…). */
+  /** `null` — неподдерживаемый тип сообщения (стикер, фото…) или запись удаления. */
   text: string | null;
   /** Unix-время в секундах, как в API. */
   timestamp: number;
@@ -22,5 +22,6 @@ export interface IMessage {
   failReason: string | null;
   /** id сообщения, которое эта запись правит или удаляет. */
   replacesId: string | null;
+  /** Запись удаления: в ленте и в превью списка — заглушка «Сообщение удалено». */
   isDeleted: boolean;
 }

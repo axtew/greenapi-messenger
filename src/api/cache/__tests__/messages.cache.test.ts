@@ -52,17 +52,33 @@ describe("mergeMessages", () => {
     expect(getIds(mergeMessages([], [original, edit]))).toEqual(["c"]);
   });
 
-  it("удаление убирает и оригинал, и саму запись удаления", () => {
+  it("удаление убирает оригинал, а запись удаления остаётся заглушкой по своему времени", () => {
     const original = makeMessage("a", 10, { text: "секрет" });
-    const deletion = makeMessage("d", 40, { text: "секрет", replacesId: "a", isDeleted: true });
+    const deletion = makeMessage("d", 40, { text: null, replacesId: "a", isDeleted: true });
 
     expect(mergeMessages([original, makeMessage("b", 20)], [deletion])).toEqual([
       makeMessage("b", 20),
+      deletion,
     ]);
   });
 
-  it("запись с isDeleted без ссылки не показывается", () => {
-    expect(mergeMessages([], [makeMessage("a", 10, { isDeleted: true })])).toEqual([]);
+  it("удаление в том же ответе, что и оригинал, тоже убирает его", () => {
+    const original = makeMessage("a", 10);
+    const deletion = makeMessage("d", 40, { text: null, replacesId: "a", isDeleted: true });
+
+    expect(mergeMessages([], [original, deletion])).toEqual([deletion]);
+  });
+
+  it("запись удаления без оригинала в истории остаётся заглушкой", () => {
+    const deletion = makeMessage("d", 10, { text: null, replacesId: "gone", isDeleted: true });
+
+    expect(mergeMessages([], [deletion])).toEqual([deletion]);
+  });
+
+  it("повторное слияние той же записи удаления не дублирует заглушку", () => {
+    const deletion = makeMessage("d", 40, { text: null, replacesId: "a", isDeleted: true });
+
+    expect(getIds(mergeMessages([deletion], [deletion]))).toEqual(["d"]);
   });
 
   it("сортировка по времени, при равенстве — по порядку поступления", () => {

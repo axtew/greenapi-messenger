@@ -49,6 +49,7 @@ export interface I18n {
     today: string;
     yesterday: string;
     unsupportedMessage: string;
+    deletedMessage: string;
     failedLabel: string;
     composerPlaceholder: string;
     sendButton: string;

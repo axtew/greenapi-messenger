@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createMemoryStorage } from "@/__tests__/_memoryStorage";
-import type { IChat, IContact } from "@/types/chats.types";
+import type { IChat, IChatLastMessage, IContact } from "@/types/chats.types";
 import { EMessageDirection } from "@/types/messages.types";
 
 import {
@@ -32,8 +32,8 @@ function makeChat(chatId: string, overrides: Partial<IChat> = {}): IChat {
   };
 }
 
-function makeLastMessage(timestamp: number, text: string | null = "text") {
-  return { text, timestamp, direction: EMessageDirection.INCOMING };
+function makeLastMessage(timestamp: number, text: string | null = "text"): IChatLastMessage {
+  return { text, timestamp, direction: EMessageDirection.INCOMING, isDeleted: false };
 }
 
 const CONTACT: IContact = {
@@ -67,6 +67,18 @@ describe("readStoredChats", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([{ chatId: 1 }]));
 
     expect(readStoredChats(ID_INSTANCE)).toEqual([]);
+  });
+
+  it("снимок, сохранённый до появления isDeleted, читается как неудалённый", () => {
+    const oldLastMessage = { text: "text", timestamp: 100, direction: EMessageDirection.INCOMING };
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([{ ...makeChat("1"), lastMessage: oldLastMessage }]),
+    );
+
+    expect(readStoredChats(ID_INSTANCE)).toEqual([
+      makeChat("1", { lastMessage: makeLastMessage(100) }),
+    ]);
   });
 
   it("список другого инстанса не читается", () => {
@@ -165,6 +177,15 @@ describe("applyLastMessage", () => {
     });
 
     expect(chat.lastMessage?.text).toBe("правка");
+  });
+
+  it("удаление последнего сообщения с тем же временем становится снимком", () => {
+    const chats = [makeChat("1", { lastMessage: makeLastMessage(100, "было") })];
+    const deletion = { ...makeLastMessage(100, null), isDeleted: true };
+
+    const [chat] = applyLastMessage(chats, "1", deletion, { incrementUnread: false });
+
+    expect(chat.lastMessage).toEqual(deletion);
   });
 
   it("более старое сообщение снимок не меняет", () => {

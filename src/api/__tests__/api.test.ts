@@ -440,7 +440,8 @@ describe("messages.service", () => {
       status: EMessageStatus.FAILED,
     });
     expect(messages[3]).toMatchObject({ text: "исправлено", replacesId: "orig", isDeleted: false });
-    expect(messages[4]).toMatchObject({ replacesId: "orig", isDeleted: true });
+    // Текст удалённого сообщения из записи удаления не сохраняется.
+    expect(messages[4]).toMatchObject({ text: null, replacesId: "orig", isDeleted: true });
     expect(lastRequest().init?.body).toBe(JSON.stringify({ chatId: "10000000", count: 100 }));
   });
 

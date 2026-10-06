@@ -114,3 +114,9 @@ Diff base: working-tree (`commit_policy: owner` — пайплайн не ком
 - chore-ui / iter-2 — developer (fix-цикл) запущен: JSDoc `useChatPage`, `!event.repeat`, «4xx, кроме 429».
 - chore-ui / iter-2 — developer: COMPLETED (lint/build зелёные, test 152/152). Static review запущен.
 - chore-ui / iter-2 — static: APPROVED. Заход готов к коммиту владельца. Открыто: перевыпуск токена; превью при удалённом последнем сообщении (`count: 10` + `mergeMessages`) — вопрос владельцу.
+- chore-ui закоммичен владельцем: `7e396c9`. Токен перевыпущен владельцем.
+- `pipeline-profile.md` → «Живые проверки»: протокол фильтрации секретов в браузере (helper для кредов, allowlist ключей localStorage, запросы GREEN-API только через `browser_evaluate` с вырезанием токена).
+- Поправка «Phases 5, 7, 9 — added 2026-10-06 (16)»: «Сообщение удалено». chore-deleted / iter-1 — developer запущен (база — `7e396c9`).
+- chore-deleted / iter-1 — developer: COMPLETED (lint/build зелёные, test 157/157). Текст удалённой записи обнуляется в сервисе; `IChatLastMessage.isDeleted` (default false для старых записей). Живая сверка: у записей удаления `deletedMessageId` не совпадает ни с одним `idMessage`; timestamp — вероятно время удаления. Риск: у записи удаления заполнены и `editedMessageId`, и `deletedMessageId` — правленый текст может остаться рядом с заглушкой. Static + visual запущены.
+- chore-deleted / iter-1 — visual: APPROVED (4/4 + raw_values_in_ui PASS). Связи в живом ответе: `deletion.editedMessageId = edit.idMessage`, `deletion.deletedMessageId = original` → правка убирается, осиротевшего текста нет (один случай). Секреты не попали в вывод — новый протокол сработал. Ждём static.
+- chore-deleted / iter-1 — static: APPROVED. Риск для Phase 9: сервис берёт `editedMessageId || deletedMessageId` — если оригинал в кэше (из уведомления), а правки нет, удаление его не скроет; предложено надёжное правило (обе ссылки в `IMessage`). Заход готов к коммиту.
