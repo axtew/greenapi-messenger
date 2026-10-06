@@ -1,5 +1,5 @@
 import { Input } from "@/components/Input";
-import { B2, H1, H3 } from "@/components/Typography";
+import { B2, H1 } from "@/components/Typography";
 import { useI18nSelector } from "@/context/I18nContext";
 
 import { SCard, SForm, SHeader, SNotice, SSubmit, SWrapper } from "./_styles";
@@ -8,6 +8,7 @@ import { useLoginForm } from "./_useLoginForm";
 /** Экран входа по `idInstance` и `apiTokenInstance` инстанса GREEN-API. */
 export function LoginPage() {
   const l = useI18nSelector(({ l }) => l.login);
+
   const { form, isSubmitDisabled, isSessionExpired, submitError, onChange, onSubmit } =
     useLoginForm();
 
@@ -49,7 +50,7 @@ export function LoginPage() {
           />
 
           <SSubmit type="submit" disabled={isSubmitDisabled}>
-            <H3 as="span">{l.submitButton}</H3>
+            {l.submitButton}
           </SSubmit>
 
           {submitError !== null && (

@@ -1,19 +1,33 @@
+import { createLink } from "@tanstack/react-router";
 import styled, { css } from "styled-components";
 
 import { B1, H3 } from "@/components/Typography";
 
-export const SRoot = styled.div`
+/** Выбранный чат — заливка `primary` и белый текст; остальные подсвечиваются при наведении. */
+const SAnchor = styled.a<{ $isSelected: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
   min-height: 72px;
   padding: 9px;
   border-radius: ${({ theme }) => theme.radii.item};
+  color: ${({ $isSelected, theme }) => ($isSelected ? theme.palette.onPrimary : theme.palette.text)};
+  text-decoration: none;
+  background: ${({ $isSelected, theme }) => ($isSelected ? theme.palette.primary : "transparent")};
 
   &:hover {
-    background: ${({ theme }) => theme.palette.surfaceMuted};
+    background: ${({ $isSelected, theme }) =>
+      $isSelected ? theme.palette.primary : theme.palette.surfaceMuted};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.palette.primary};
+    outline-offset: 2px;
   }
 `;
+
+/** Типизированная ссылка роутера (`to`, `params`) с разметкой строки списка. */
+export const SLink = createLink(SAnchor);
 
 export const SContent = styled.div`
   display: flex;

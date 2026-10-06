@@ -2,30 +2,15 @@ import { type FocusEvent, type KeyboardEvent, useId, useRef, useState } from "re
 
 import { useAccountQuery } from "@/api/queries/account.queries";
 import { signOut } from "@/api/session";
+import { IconButton } from "@/components/IconButton";
 import { LogoutIcon, MenuIcon } from "@/components/icons";
+import { Skeleton } from "@/components/Skeleton";
 import { B1, Caption } from "@/components/Typography";
 import { useI18nSelector } from "@/context/I18nContext";
-import type { IAccount } from "@/types/account.types";
 import { EKeyboardKey } from "@/types/common.types";
+import { formatContactHandle } from "@/utils/helpers/contactFormat";
 
-import {
-  SAccount,
-  SAccountSkeleton,
-  SBackdrop,
-  SDropdown,
-  SLogoutButton,
-  SMenuButton,
-  SRoot,
-} from "./_styles";
-
-/** Строка аккаунта в меню: `@username`, иначе `+телефон`; `null`, если нет ни того, ни другого. */
-function formatAccountLine({ username, phone }: IAccount): string | null {
-  if (username !== null) {
-    return `@${username}`;
-  }
-
-  return phone === null ? null : `+${phone}`;
-}
+import { SAccount, SBackdrop, SDropdown, SLogoutButton, SRoot } from "./_styles";
 
 /**
  * Ref-callback выпадающего блока: переводит в него фокус при открытии меню.
@@ -46,7 +31,7 @@ export function AccountMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: account, isPending } = useAccountQuery();
 
-  const accountLine = account === undefined ? null : formatAccountLine(account);
+  const accountLine = account === undefined ? null : formatContactHandle(account);
 
   const close = () => setIsOpen(false);
 
@@ -75,16 +60,15 @@ export function AccountMenu() {
 
   return (
     <SRoot onKeyDown={onKeyDown} onBlur={onBlur}>
-      <SMenuButton
+      <IconButton
         ref={menuButtonRef}
-        type="button"
         aria-label={l.menuButton}
         aria-expanded={isOpen}
         aria-controls={isOpen ? dropdownId : undefined}
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <MenuIcon />
-      </SMenuButton>
+      </IconButton>
 
       {isOpen && (
         <>
@@ -94,7 +78,7 @@ export function AccountMenu() {
             {(isPending || accountLine !== null) && (
               <SAccount>
                 <Caption color="textMuted">{l.accountLabel}</Caption>
-                {isPending ? <SAccountSkeleton /> : <B1>{accountLine}</B1>}
+                {isPending ? <Skeleton width="60%" height="22px" /> : <B1>{accountLine}</B1>}
               </SAccount>
             )}
 

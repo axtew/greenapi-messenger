@@ -1,6 +1,7 @@
-import { type AnyRoute, createRoute, redirect } from "@tanstack/react-router";
+import { type AnyRoute, createRoute, redirect, useParams } from "@tanstack/react-router";
 
 import { ESignOutReason, getSession } from "@/api/session";
+import { ChatPage } from "@/pages/ChatPage";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "@/pages/LoginPage";
 
@@ -38,6 +39,18 @@ export function createCommonRoutes<TRoot extends AnyRoute>(rootRoute: TRoot) {
   return [loginRoute] as const;
 }
 
+/**
+ * Передаёт `chatId` из адреса экрану чата пропсом.
+ *
+ * Параметры читаются по id роута из зарегистрированного роутера: у роута, созданного обобщённой фабрикой,
+ * `route.useParams()` не выводит тип, а неверный id здесь — ошибка компиляции.
+ */
+function ChatRoute() {
+  const { chatId } = useParams({ from: "/protected-layout/chat/$chatId" });
+
+  return <ChatPage chatId={chatId} />;
+}
+
 /** Роуты защищённой части — дети layout-роута с проверкой сессии в `beforeLoad`. */
 export function createProtectedRoutes<TLayout extends AnyRoute>(protectedLayoutRoute: TLayout) {
   const homeRoute = createRoute({
@@ -46,5 +59,11 @@ export function createProtectedRoutes<TLayout extends AnyRoute>(protectedLayoutR
     component: HomePage,
   });
 
-  return [homeRoute] as const;
+  const chatRoute = createRoute({
+    getParentRoute: () => protectedLayoutRoute,
+    path: routerPaths.chat,
+    component: ChatRoute,
+  });
+
+  return [homeRoute, chatRoute] as const;
 }

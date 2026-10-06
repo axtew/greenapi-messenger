@@ -1,14 +1,10 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 
-/** Пульсация плейсхолдеров на время загрузки. */
-export const skeletonPulse = keyframes`
-  50% {
-    opacity: 0.5;
-  }
-`;
+import { SLayout } from "../../_styles";
 
 /** Левая панель: на широком экране — карточка с отступом от краёв окна, на узком — весь экран. */
 export const SRoot = styled.aside`
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -25,6 +21,11 @@ export const SRoot = styled.aside`
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
       env(safe-area-inset-left);
     border-radius: 0;
+
+    /* Открыт чат — на узком экране видна только его колонка. */
+    ${SLayout}[data-chat-open="true"] > & {
+      display: none;
+    }
   }
 `;
 
@@ -35,13 +36,17 @@ export const SHeader = styled.header`
   padding: 10px 16px;
 `;
 
-/** Прокручиваемая область под шапкой: список чатов или его состояния. */
+/**
+ * Прокручиваемая область под шапкой: список чатов или его состояния.
+ *
+ * Нижний отступ — под кнопку нового чата: она лежит поверх списка и иначе закрывала бы последний чат.
+ */
 export const SBody = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  padding: 0 8px 8px;
+  padding: 0 8px 88px;
   overflow-y: auto;
 `;
 
@@ -64,28 +69,11 @@ export const SSkeletonRow = styled.div`
   padding: 9px;
 `;
 
-const SSkeletonShape = styled.div`
-  border-radius: ${({ theme }) => theme.radii.pill};
-  background: ${({ theme }) => theme.palette.surfaceMuted};
-  animation: ${skeletonPulse} 1.5s ease-in-out infinite;
-`;
-
-export const SSkeletonAvatar = styled(SSkeletonShape)`
-  flex-shrink: 0;
-  width: 54px;
-  height: 54px;
-`;
-
 export const SSkeletonLines = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 10px;
-`;
-
-export const SSkeletonLine = styled(SSkeletonShape)<{ $width: string }>`
-  width: ${({ $width }) => $width};
-  height: 14px;
 `;
 
 export const SEmpty = styled.div`
@@ -96,4 +84,32 @@ export const SEmpty = styled.div`
   justify-content: center;
   gap: 4px;
   padding: 24px;
+`;
+
+/** Круглая кнопка нового чата в правом нижнем углу панели, поверх списка. */
+export const SNewChatButton = styled.button`
+  position: absolute;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  color: ${({ theme }) => theme.palette.onPrimary};
+  background: ${({ theme }) => theme.palette.primary};
+  cursor: pointer;
+
+  /* Своего оттенка наведения в палитре нет — затемняется сам основной цвет. */
+  &:hover {
+    filter: brightness(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.palette.primary};
+    outline-offset: 2px;
+  }
 `;

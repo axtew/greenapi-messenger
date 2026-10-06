@@ -12,6 +12,7 @@ import {
   ECheckAccountFailReason,
 } from "@/api/schemas/chats.schema";
 import type { IContact, TCheckAccountResult } from "@/types/chats.types";
+import { formatContactHandle } from "@/utils/helpers/contactFormat";
 
 import { toNullable, toPhone, toUsername } from "./_helpers";
 
@@ -64,19 +65,12 @@ export async function getContact(chatId: string): Promise<IContact> {
     body: { chatId },
   });
 
-  const contactUsername = toUsername(username);
-  const phone = toPhone(phoneNumber);
+  const handle = { username: toUsername(username), phone: toPhone(phoneNumber) };
 
   return {
     chatId,
-    name:
-      toNullable(name) ??
-      toNullable(contactName) ??
-      (contactUsername === null ? null : `@${contactUsername}`) ??
-      (phone === null ? null : `+${phone}`) ??
-      chatId,
-    phone,
-    username: contactUsername,
+    name: toNullable(name) ?? toNullable(contactName) ?? formatContactHandle(handle) ?? chatId,
+    ...handle,
     avatarUrl: toNullable(avatar),
   };
 }

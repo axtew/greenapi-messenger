@@ -1,5 +1,7 @@
 import styled from "styled-components";
 
+import { Button } from "@/components/Button";
+
 export const SWrapper = styled.main`
   display: flex;
   align-items: center;
@@ -52,17 +54,7 @@ export const SForm = styled.form`
   gap: 16px;
 `;
 
-export const SSubmit = styled.button`
-  min-height: 48px;
+/** Отступ над кнопкой больше, чем между полями: кнопка отделена от группы полей. */
+export const SSubmit = styled(Button)`
   margin-top: 8px;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.item};
-  color: ${({ theme }) => theme.palette.onPrimary};
-  background: ${({ theme }) => theme.palette.primary};
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
 `;

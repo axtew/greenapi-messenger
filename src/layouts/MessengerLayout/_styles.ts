@@ -6,7 +6,7 @@ export const SLayout = styled.div`
   background: ${({ theme }) => theme.palette.chatBackground};
 `;
 
-/** Правая колонка — место открытого экрана; на узком экране скрыта, видна только левая панель. */
+/** Правая колонка — место открытого экрана; на узком экране видна вместо левой панели, только когда открыт чат. */
 export const SContent = styled.main`
   display: flex;
   flex: 1;
@@ -16,5 +16,9 @@ export const SContent = styled.main`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobileMax}) {
     display: none;
+
+    ${SLayout}[data-chat-open="true"] > & {
+      display: flex;
+    }
   }
 `;
