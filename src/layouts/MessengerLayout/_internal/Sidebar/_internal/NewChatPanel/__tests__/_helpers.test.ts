@@ -4,7 +4,7 @@ import { EGreenApiErrorKind, EGreenApiMethod, GreenApiError } from "@/api/greenA
 import { ChatNotFoundError } from "@/api/mutations/chats.mutations";
 import type { I18n } from "@/types/i18n.types";
 
-import { getSubmitErrorText, normalizePhone, validatePhone } from "./_helpers";
+import { getSubmitErrorText, normalizePhone, validatePhone } from "../_helpers";
 
 const l: I18n["newChat"] = {
   title: "title",

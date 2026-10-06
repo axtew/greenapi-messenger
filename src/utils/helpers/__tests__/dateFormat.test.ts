@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatChatListTime, formatDayLabel, formatMessageTime, getDayKey } from "./dateFormat";
+import { formatChatListTime, formatDayLabel, formatMessageTime, getDayKey } from "../dateFormat";
 
 /** Unix-время в секундах для локальной даты. */
 function at(year: number, month: number, day: number, hours = 0, minutes = 0): number {

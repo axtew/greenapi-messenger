@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 
+import { createMemoryStorage } from "@/__tests__/_memoryStorage";
 import {
   EGreenApiErrorKind,
   EGreenApiMethod,
@@ -18,8 +19,6 @@ import { checkAccount, getChatIds, getContact } from "@/api/services/chats.servi
 import { getChatHistory, sendMessage } from "@/api/services/messages.service";
 import { ESignOutReason, getSession, saveSession, signOut } from "@/api/session";
 import { EMessageDirection, EMessageStatus } from "@/types/messages.types";
-
-import { createMemoryStorage } from "./_memoryStorage";
 
 const SESSION = { idInstance: "4100000001", apiTokenInstance: "secret-token-abc" };
 const SESSION_KEY = "greenapi-messenger:session";

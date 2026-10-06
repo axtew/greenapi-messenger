@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getAvatarColor, getInitials } from "./_helpers";
+import { getAvatarColor, getInitials } from "../_helpers";
 
 const COLORS = ["red", "green", "blue"] as const;
 

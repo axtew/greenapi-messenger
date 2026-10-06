@@ -91,3 +91,7 @@ Diff base: working-tree (`commit_policy: owner` — пайплайн не ком
 - phase-6 / iter-3 — static: APPROVED. Заметки: `aria-busy` для загрузки — кандидат в BACKLOG; комментарий над `pulse` можно удалить. Ждём visual.
 - phase-6 / iter-3 — visual: APPROVED (unknown_chat_redirect + raw_values_in_ui PASS, остальные перенесены). Gate 5.5 пройден. Замечено: 429 от GREEN-API на `getChatHistory` при двух синхронизациях подряд. Фаза готова к коммиту.
 - Владелец (2026-10-06): unit-тесты — в `__tests__/` рядом с модулем (правило в `testing.md`), поправка «Phases 7, 9 — added 2026-10-06 (14)». Перенос существующих тестов + тесты `localStorage.ts` — отдельный заход (вне фаз) после коммита Phase 6, своим коммитом `refactor(tests)`.
+- phase-6 закоммичена владельцем: `b008cb0` (docs(agents)) + `a8ce942` (feat(chats)).
+- chore-tests / iter-1 (вне фаз: перенос unit-тестов в `__tests__/` + тесты `localStorage.ts`) — developer запущен (база — `a8ce942`).
+- chore-tests / iter-1 — developer: COMPLETED (lint/build зелёные, test 115/115 в 9 файлах). 7 тестов перенесены `git mv`, `_memoryStorage.ts` → `src/__tests__/`, новый `localStorage.test.ts` (10 тестов, проверка утечки значения в лог доказана мутацией). Static review запущен.
+- chore-tests / iter-1 — static: APPROVED. Заход готов к коммиту владельца (нужен `git add -A`: индекс смешанный). Следующая — phase-7.

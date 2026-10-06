@@ -1,12 +1,12 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createMemoryStorage } from "@/api/__tests__/_memoryStorage";
+import { createMemoryStorage } from "@/__tests__/_memoryStorage";
 import { getChatsQueryKey, readStoredChats } from "@/api/cache/chats.cache";
 import { checkAccount, getContact } from "@/api/services/chats.service";
 import type { IChat, IContact } from "@/types/chats.types";
 
-import { ChatNotFoundError, createChat } from "./chats.mutations";
+import { ChatNotFoundError, createChat } from "../chats.mutations";
 
 vi.mock("@/api/services/chats.service", () => ({
   checkAccount: vi.fn(),

@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createMemoryStorage } from "@/api/__tests__/_memoryStorage";
+import { createMemoryStorage } from "@/__tests__/_memoryStorage";
 import type { IChat, IContact } from "@/types/chats.types";
 import { EMessageDirection } from "@/types/messages.types";
 
@@ -13,7 +13,7 @@ import {
   sortChats,
   updateChats,
   upsertContact,
-} from "./chats.cache";
+} from "../chats.cache";
 
 const ID_INSTANCE = "4100000001";
 const STORAGE_KEY = `greenapi-messenger:chats:${ID_INSTANCE}`;

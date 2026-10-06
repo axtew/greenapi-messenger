@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatContactHandle } from "./contactFormat";
+import { formatContactHandle } from "../contactFormat";
 
 describe("formatContactHandle", () => {
   it("username важнее телефона", () => {
