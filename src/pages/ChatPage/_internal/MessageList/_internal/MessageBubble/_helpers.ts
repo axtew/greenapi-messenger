@@ -1,3 +1,6 @@
+import type { I18n } from "@/types/i18n.types";
+import { ESendFailReason } from "@/types/messages.types";
+
 import { ETextPartKind, type ITextPart } from "./_types";
 
 /**
@@ -31,4 +34,22 @@ export function splitTextWithLinks(text: string): ITextPart[] {
   }
 
   return parts;
+}
+
+/** Подпись недоставленного сообщения: «Не доставлено» и причина, если она известна. */
+export function getFailedLabel(
+  failReason: ESendFailReason | null,
+  l: { failedLabel: string; sendErrors: I18n["sendErrors"] },
+): string {
+  if (failReason === null) {
+    return l.failedLabel;
+  }
+
+  const reasons: Record<ESendFailReason, string> = {
+    [ESendFailReason.QUOTA]: l.sendErrors.quota,
+    [ESendFailReason.NETWORK]: l.sendErrors.network,
+    [ESendFailReason.GENERIC]: l.sendErrors.generic,
+  };
+
+  return `${l.failedLabel}: ${reasons[failReason]}`;
 }

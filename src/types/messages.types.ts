@@ -9,6 +9,15 @@ export enum EMessageStatus {
   FAILED = "failed",
 }
 
+/** Почему сообщение не отправлено; текст для пользователя выбирает интерфейс. */
+export enum ESendFailReason {
+  /** Ответ 466: исчерпан лимит тарифа инстанса. */
+  QUOTA = "quota",
+  /** Ответа от GREEN-API не было: сбой сети. */
+  NETWORK = "network",
+  GENERIC = "generic",
+}
+
 export interface IMessage {
   /** `idMessage` из GREEN-API; у сообщения, ещё не принятого сервером, — `local-<uuid>`. */
   id: string;
@@ -19,7 +28,8 @@ export interface IMessage {
   /** Unix-время в секундах, как в API. */
   timestamp: number;
   status: EMessageStatus;
-  failReason: string | null;
+  /** Причина неудачной отправки; `null` — сообщение не помечено недоставленным или причина неизвестна. */
+  failReason: ESendFailReason | null;
   /** id сообщения, которое эта запись правит или удаляет. */
   replacesId: string | null;
   /** Запись удаления: в ленте и в превью списка — заглушка «Сообщение удалено». */

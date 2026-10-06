@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { splitTextWithLinks } from "../_helpers";
+import { ESendFailReason } from "@/types/messages.types";
+
+import { getFailedLabel, splitTextWithLinks } from "../_helpers";
 import { ETextPartKind } from "../_types";
 
 function text(value: string) {
@@ -68,5 +70,24 @@ describe("splitTextWithLinks", () => {
     expect(splitTextWithLinks("ftp://a.com data:text/html,x https:// https://.")).toEqual([
       text("ftp://a.com data:text/html,x https:// https://."),
     ]);
+  });
+});
+
+describe("getFailedLabel", () => {
+  const l = {
+    failedLabel: "Не доставлено",
+    sendErrors: { quota: "лимит", network: "нет связи", generic: "ошибка" },
+  };
+
+  it("причина неизвестна — только пометка", () => {
+    expect(getFailedLabel(null, l)).toBe("Не доставлено");
+  });
+
+  it.each([
+    { reason: ESendFailReason.QUOTA, label: "Не доставлено: лимит" },
+    { reason: ESendFailReason.NETWORK, label: "Не доставлено: нет связи" },
+    { reason: ESendFailReason.GENERIC, label: "Не доставлено: ошибка" },
+  ])("$reason → «$label»", ({ reason, label }) => {
+    expect(getFailedLabel(reason, l)).toBe(label);
   });
 });

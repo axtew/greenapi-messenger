@@ -86,30 +86,9 @@ export const SEmpty = styled.div`
   padding: 24px;
 `;
 
-/** Круглая кнопка нового чата в правом нижнем углу панели, поверх списка. */
-export const SNewChatButton = styled.button`
+/** Место круглой кнопки нового чата: правый нижний угол панели, поверх списка. */
+export const SNewChatButtonSlot = styled.div`
   position: absolute;
   right: 20px;
   bottom: calc(20px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  padding: 0;
-  border: none;
-  border-radius: ${({ theme }) => theme.radii.pill};
-  color: ${({ theme }) => theme.palette.onPrimary};
-  background: ${({ theme }) => theme.palette.primary};
-  cursor: pointer;
-
-  /* Своего оттенка наведения в палитре нет — затемняется сам основной цвет. */
-  &:hover {
-    filter: brightness(0.92);
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.palette.primary};
-    outline-offset: 2px;
-  }
 `;

@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useRef, useState } from "react";
 
 import { useChatsQuery } from "@/api/queries/chats.queries";
+import { IconButton } from "@/components/IconButton";
 import { PencilIcon } from "@/components/icons";
 import { Skeleton } from "@/components/Skeleton";
 import { B1, Caption, H3 } from "@/components/Typography";
@@ -15,7 +16,7 @@ import {
   SEmpty,
   SHeader,
   SList,
-  SNewChatButton,
+  SNewChatButtonSlot,
   SRoot,
   SSkeletonLines,
   SSkeletonRow,
@@ -127,14 +128,17 @@ export function Sidebar() {
         )}
       </SBody>
 
-      <SNewChatButton
-        ref={focusAfterNewChat}
-        type="button"
-        aria-label={l.newChatButton}
-        onClick={() => setView(ESidebarView.NEW_CHAT)}
-      >
-        <PencilIcon />
-      </SNewChatButton>
+      <SNewChatButtonSlot>
+        <IconButton
+          ref={focusAfterNewChat}
+          variant="primary"
+          size="lg"
+          aria-label={l.newChatButton}
+          onClick={() => setView(ESidebarView.NEW_CHAT)}
+        >
+          <PencilIcon />
+        </IconButton>
+      </SNewChatButtonSlot>
     </SRoot>
   );
 }

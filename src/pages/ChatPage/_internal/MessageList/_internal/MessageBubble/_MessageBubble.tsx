@@ -5,7 +5,7 @@ import { useI18nSelector } from "@/context/I18nContext";
 import { EMessageDirection, EMessageStatus } from "@/types/messages.types";
 import { formatMessageTime } from "@/utils/helpers/dateFormat";
 
-import { splitTextWithLinks } from "./_helpers";
+import { getFailedLabel, splitTextWithLinks } from "./_helpers";
 import { SBubble, SLink, SMeta, SNotice, SRow } from "./_styles";
 import { ETextPartKind, type IMessageBubbleProps } from "./_types";
 
@@ -16,7 +16,7 @@ import { ETextPartKind, type IMessageBubbleProps } from "./_types";
  * что тип не поддерживается. Недоставленное — пометкой с причиной вместо времени; ещё не принятое сервером — полупрозрачным временем.
  */
 export function MessageBubble({ message, isLastInGroup }: IMessageBubbleProps) {
-  const l = useI18nSelector(({ l }) => l.chat);
+  const l = useI18nSelector(({ l }) => ({ ...l.chat, sendErrors: l.sendErrors }));
 
   const isOutgoing = message.direction === EMessageDirection.OUTGOING;
   const isFailed = message.status === EMessageStatus.FAILED;
@@ -42,9 +42,7 @@ export function MessageBubble({ message, isLastInGroup }: IMessageBubbleProps) {
           <SMeta $isPending={message.status === EMessageStatus.SENDING}>
             {isFailed ? (
               <Caption as="span" color="danger">
-                {message.failReason === null
-                  ? l.failedLabel
-                  : `${l.failedLabel}: ${message.failReason}`}
+                {getFailedLabel(message.failReason, l)}
               </Caption>
             ) : (
               <Caption as="span" color={isOutgoing ? "metaOutgoing" : "textMuted"}>

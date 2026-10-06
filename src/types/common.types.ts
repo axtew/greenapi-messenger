@@ -5,5 +5,6 @@ export type TSetState<T> = Dispatch<SetStateAction<T>>;
 
 /** Значения `KeyboardEvent.key`, которые проверяет код. */
 export enum EKeyboardKey {
+  ENTER = "Enter",
   ESCAPE = "Escape",
 }

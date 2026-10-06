@@ -1,4 +1,7 @@
+import { Fragment } from "react";
+
 import { ChatHeader } from "./_ChatHeader";
+import { Composer } from "./_internal/Composer";
 import { MessageList } from "./_internal/MessageList";
 import { SColumn, SWrapper } from "./_styles";
 import { useChatPage } from "./_useChatPage";
@@ -10,8 +13,9 @@ interface IChatPageProps {
 /**
  * Экран переписки с собеседником.
  *
- * Лента пересоздаётся при смене чата: её прокрутка и «первое получение данных» относятся к одному чату.
- * Пока чат ищут в списке, лента не запрашивается — адрес может указывать на чат, которого нет.
+ * Лента и поле ввода пересоздаются при смене чата (ключ — на общей обёртке): прокрутка, «первое получение данных»
+ * и набранный текст относятся к одному чату. Пока чат ищут в списке, лента не запрашивается и поля ввода нет — адрес
+ * может указывать на чат, которого нет.
  */
 export function ChatPage({ chatId }: IChatPageProps) {
   const { chat, isChatPending } = useChatPage(chatId);
@@ -24,7 +28,12 @@ export function ChatPage({ chatId }: IChatPageProps) {
     <SWrapper>
       <SColumn>
         <ChatHeader chat={chat} />
-        {chat !== undefined && <MessageList key={chatId} chatId={chatId} />}
+        {chat !== undefined && (
+          <Fragment key={chatId}>
+            <MessageList chatId={chatId} />
+            <Composer chatId={chatId} />
+          </Fragment>
+        )}
       </SColumn>
     </SWrapper>
   );
