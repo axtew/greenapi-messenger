@@ -1,7 +1,7 @@
-import { H3 } from "@/components/Typography";
+import { Pill } from "@/components/Pill";
 import { useI18nSelector } from "@/context/I18nContext";
 
-import { SPill, SWrapper } from "./_styles";
+import { SWrapper } from "./_styles";
 
 /** Экран индексного роута: пустое состояние правой колонки, пока чат не выбран. */
 export function HomePage() {
@@ -9,11 +9,7 @@ export function HomePage() {
 
   return (
     <SWrapper>
-      <SPill>
-        <H3 as="p" color="onPrimary" textAlign="center">
-          {l.selectChat}
-        </H3>
-      </SPill>
+      <Pill>{l.selectChat}</Pill>
     </SWrapper>
   );
 }
