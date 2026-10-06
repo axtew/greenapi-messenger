@@ -8,7 +8,7 @@ export const SRoot = styled.aside`
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  width: 420px;
+  width: clamp(280px, 28vw, 380px);
   min-height: 0;
   margin: 18px;
   margin-right: 0;

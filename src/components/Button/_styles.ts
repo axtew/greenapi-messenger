@@ -9,6 +9,11 @@ export const SButton = styled.button`
   background: ${({ theme }) => theme.palette.primary};
   cursor: pointer;
 
+  /* Своего оттенка наведения в палитре нет — затемняется сам основной цвет. */
+  &:hover:enabled {
+    filter: brightness(0.92);
+  }
+
   &:disabled {
     opacity: 0.6;
     cursor: default;

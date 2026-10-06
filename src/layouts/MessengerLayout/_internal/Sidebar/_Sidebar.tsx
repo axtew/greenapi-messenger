@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { type KeyboardEvent, useRef, useState } from "react";
 
 import { useChatsQuery } from "@/api/queries/chats.queries";
 import { PencilIcon } from "@/components/icons";
 import { Skeleton } from "@/components/Skeleton";
 import { B1, Caption, H3 } from "@/components/Typography";
 import { useI18nSelector } from "@/context/I18nContext";
+import { EKeyboardKey } from "@/types/common.types";
 
 import { AccountMenu } from "./_internal/AccountMenu";
 import { ChatListItem } from "./_internal/ChatListItem";
@@ -33,7 +34,8 @@ enum ESidebarView {
  * Левая панель мессенджера: шапка с меню аккаунта и список чатов либо панель «Новый чат».
  *
  * Список чатов запрашивается при любом виде: запрос должен существовать с первого рендера каркаса.
- * После закрытия панели «Новый чат» фокус возвращается на кнопку, которая её открыла.
+ * Панель «Новый чат» закрывается кнопкой «назад» или `Escape` при фокусе внутри панели; после закрытия фокус
+ * возвращается на кнопку, которая её открыла.
  */
 export function Sidebar() {
   const l = useI18nSelector(({ l }) => l.sidebar);
@@ -46,6 +48,17 @@ export function Sidebar() {
   const closeNewChat = () => {
     isNewChatClosedRef.current = true;
     setView(ESidebarView.LIST);
+  };
+
+  /**
+   * `Escape` в панели «Новый чат» закрывает её. Событие отменяется: открытый рядом чат на это нажатие не закрывается.
+   * Во время IME-ввода номера клавиша принадлежит вводу.
+   */
+  const onNewChatKeyDown = (event: KeyboardEvent) => {
+    if (event.key === EKeyboardKey.ESCAPE && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      closeNewChat();
+    }
   };
 
   /**
@@ -62,7 +75,7 @@ export function Sidebar() {
 
   if (view === ESidebarView.NEW_CHAT) {
     return (
-      <SRoot>
+      <SRoot onKeyDown={onNewChatKeyDown}>
         <NewChatPanel onClose={closeNewChat} />
       </SRoot>
     );

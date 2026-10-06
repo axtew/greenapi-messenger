@@ -37,6 +37,8 @@ export function AccountMenu() {
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (isOpen && event.key === EKeyboardKey.ESCAPE) {
+      // Отмена события: это `Escape` закрывает только меню, открытый чат остаётся.
+      event.preventDefault();
       close();
       menuButtonRef.current?.focus();
     }

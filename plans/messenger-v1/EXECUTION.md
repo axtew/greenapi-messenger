@@ -105,3 +105,12 @@ Diff base: working-tree (`commit_policy: owner` — пайплайн не ком
 - phase-7 / iter-2 — static: APPROVED. Фаза готова к коммиту владельца. Открыто владельцу: 429 → retry; hover `Button`; ручная проверка удаления отредактированного сообщения.
 - Владелец по итогам phase-7: удаление отредактированного сообщения проверено вручную — удаляется полностью; автопрокрутка — как есть; ссылки со скобкой — как есть; ошибка обновления ленты при кэше — в BACKLOG.md (добавлено). 429 → retry — да. Новое: закрытие чата по Esc; правки вёрстки (сайдбар 420px широк, особенно на 768px) — список правок уточняется. Hover `Button` — уточняющий вопрос.
 - Владелец: hover `Button` — да; ширина сайдбара `clamp(280px, 28vw, 380px)`. Поправка «Phases 3, 4, 6, 8 — added 2026-10-06 (15)»: заход `chore-ui` (429 → retry, Esc закрывает чат, ширина сайдбара, hover `Button`) — после коммита Phase 7, до Phase 8.
+- phase-7 закоммичена владельцем: `ef33c34`.
+- chore-ui / iter-1 — developer запущен (база — `ef33c34`).
+- Владелец: непрочитанные в заголовке «(N) GREEN-API Messenger» и точка на фавиконке (+ правило непрочитанных для скрытой вкладки) — в BACKLOG.md «Next».
+- chore-ui / iter-1 — developer: COMPLETED (lint/build зелёные, test 152/152 в 13 файлах). 429 в retry + тест правила; Esc закрывает чат (слушатель на document в `_useChatPage`), меню и панель «Новый чат» гасят Esc первыми; сайдбар clamp; hover `Button`. `_constants.ts` в git status — только окончания строк. Static + visual запущены.
+- chore-ui / iter-1 — static: NEEDS_CHANGES, Issue source: code. [code] JSDoc `useChatPage` обещает, что панель «Новый чат» всегда закрывается первой (на деле — только при фокусе внутри). Необязательно: `!event.repeat`, «4xx, кроме 429» в JSDoc. Ждём visual, затем fix-цикл.
+- chore-ui / iter-1 — visual: APPROVED (5/5 + raw_values_in_ui PASS). ВНИМАНИЕ: визуальный ревьюер при чтении localStorage частично вывел `apiTokenInstance` в вывод инструментов (лог сессии; в VISUAL.md и git его нет) — рекомендован перевыпуск токена владельцем. Найдено вне захода: после синхронизации у чата `lastMessage: null` — вероятно, самая новая запись истории удалена, а `count:1` берёт только её.
+- chore-ui / iter-2 — developer (fix-цикл) запущен: JSDoc `useChatPage`, `!event.repeat`, «4xx, кроме 429».
+- chore-ui / iter-2 — developer: COMPLETED (lint/build зелёные, test 152/152). Static review запущен.
+- chore-ui / iter-2 — static: APPROVED. Заход готов к коммиту владельца. Открыто: перевыпуск токена; превью при удалённом последнем сообщении (`count: 10` + `mergeMessages`) — вопрос владельцу.
